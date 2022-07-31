@@ -6,9 +6,22 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 //authscreen
 import LoginScreen from './src/authscreens/LoginScreen';
 import SignupScreen from './src/authscreens/SignupScreen';
+//Mini Admin
+import Dashboard from './src/Mini Admin/Dashboard';
+import AddHostel from './src/Mini Admin/AddHostel';
+import ViewHostels from './src/Mini Admin/ViewHostels';
+import BookingRequest from './src/Mini Admin/BookingRequest';
+//Super Admin
+import SuperAdmin_Dashboard from './src/Super Admin/SuperAdmin_Dashboard';
+import VerifyHostels from './src/Super Admin/VerifyHostels';
+import SuperAdmin_ViewHostels from './src/Super Admin/SuperAdmin_ViewHostels';
 
 import SplashScreen from './src/SplashScreen';
 import HomeScreen from './src/HomeScreen';
+import HostelDetail from './src/HostelDetail';
+import BookRoom from './src/BookRoom';
+import Feedback from './src/Feedback';
+
 const Stack = createNativeStackNavigator();
 const App = ({navigation}) => {
   const [loading, setLoading] = useState(true);
@@ -39,6 +52,24 @@ const App = ({navigation}) => {
           options={{headerShown: false}}
         />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
+        <Stack.Screen name="HostelDetail" component={HostelDetail} />
+        <Stack.Screen name="BookRoom" component={BookRoom} />
+        <Stack.Screen name="Feedback" component={Feedback} />
+
+        <Stack.Screen
+          name="SuperAdmin_Dashboard"
+          component={SuperAdmin_Dashboard}
+        />
+        <Stack.Screen name="VerifyHostels" component={VerifyHostels} />
+        <Stack.Screen
+          name="SuperAdmin_ViewHostels"
+          component={SuperAdmin_ViewHostels}
+        />
+
+        <Stack.Screen name="Dashboard" component={Dashboard} />
+        <Stack.Screen name="AddHostel" component={AddHostel} />
+        <Stack.Screen name="ViewHostels" component={ViewHostels} />
+        <Stack.Screen name="BookingRequest" component={BookingRequest} />
       </Stack.Navigator>
     </NavigationContainer>
   );

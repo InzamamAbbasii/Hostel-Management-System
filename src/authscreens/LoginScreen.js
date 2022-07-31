@@ -17,18 +17,25 @@ const LoginScreen = ({navigation}) => {
     if (username.length == 0 || password.length === 0) {
       alert('All Fields are required');
     } else {
-      axios
-        .get('http://192.168.1.102/HMSAPI/api/Auth/Login', {
-          params: {
-            name: username,
-            pass: password,
-          },
-        })
-        .then(res => {
-          if (res.data.success == false) alert(res.data.message);
-          else navigation.navigate('HomeScreen');
-        })
-        .catch(err => alert(err));
+      if (username.toLocaleLowerCase() == 'admin') {
+        navigation.navigate('Dashboard');
+      } else if (username.toLocaleLowerCase() === 'super admin') {
+        navigation.navigate('SuperAdmin_Dashboard');
+      } else {
+        navigation.navigate('HomeScreen');
+      }
+      // axios
+      //   .get('http://192.168.1.102/HMSAPI/api/Auth/Login', {
+      //     params: {
+      //       name: username,
+      //       pass: password,
+      //     },
+      //   })
+      //   .then(res => {
+      //     if (res.data.success == false) alert(res.data.message);
+      //     else navigation.navigate('HomeScreen');
+      //   })
+      //   .catch(err => alert(err));
     }
   };
   return (
