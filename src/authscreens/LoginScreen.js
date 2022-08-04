@@ -8,126 +8,108 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Dimensions,
 } from 'react-native';
+import {COLOR} from '../CONSTANTS/Colors';
+import {fonts} from '../CONSTANTS/fonts';
+import {bg, logo2, logo1} from '../CONSTANTS/images';
+import CustomButton from '../reuseable/CustomButton';
+import Input from '../reuseable/Input';
+import {api} from '../CONSTANTS/api';
 import axios from 'axios';
+
+const SCREEN_HEIGHT = Dimensions.get('screen').height;
+const SCREEN_WIDTH = Dimensions.get('screen').width;
+
 const LoginScreen = ({navigation}) => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const handleLogin = () => {
-    if (username.length == 0 || password.length === 0) {
-      alert('All Fields are required');
+    if (email.length == 0 || password.length === 0) {
+      alert('Please enter your credientals to Login.');
     } else {
-      if (username.toLocaleLowerCase() == 'admin') {
-        navigation.navigate('Dashboard');
-      } else if (username.toLocaleLowerCase() === 'super admin') {
-        navigation.navigate('SuperAdmin_Dashboard');
-      } else {
-        navigation.navigate('HomeScreen');
-      }
-      // axios
-      //   .get('http://192.168.1.102/HMSAPI/api/Auth/Login', {
-      //     params: {
-      //       name: username,
-      //       pass: password,
-      //     },
-      //   })
-      //   .then(res => {
-      //     if (res.data.success == false) alert(res.data.message);
-      //     else navigation.navigate('HomeScreen');
-      //   })
-      //   .catch(err => alert(err));
+      axios
+        .get(api.login, {
+          params: {
+            email: email,
+            pass: password,
+          },
+        })
+        .then(res => {
+          if (res.data.success === false) alert(res.data.message);
+          else if (res.data.data.AccountType === 'User')
+            navigation.navigate('Dashboard');
+          else if (username.toLocaleLowerCase() == 'admin') {
+            navigation.navigate('Dashboard');
+          } else if (username.toLocaleLowerCase() === 'super admin') {
+            navigation.navigate('SuperAdmin_Dashboard');
+          } else {
+            navigation.navigate('HomeScreen');
+          }
+        })
+        .catch(err => alert(err));
     }
   };
   return (
-    <View style={styles.container}>
-      <ImageBackground
-        source={require('../../assests/images/6.jpg')}
-        resizeMode={'stretch'}
-        style={styles.backgroundImage}>
-        <ScrollView>
-          <View style={{marginTop: 100}}>
-            <Image
-              source={require('../../assests/images/logo1.png')}
-              style={{
-                width: 150,
-                height: 150,
-                alignSelf: 'center',
-                marginBottom: 20,
-              }}
-            />
-            <View style={styles.form}>
-              <View style={styles.textInput}>
-                <TextInput
-                  style={{
-                    padding: 5,
-                    fontSize: 18,
-                    width: '85%',
-                    color: '#000',
-                  }}
-                  placeholder="UserName"
-                  placeholderTextColor="#3228"
-                  onChangeText={name => setUsername(name)}
-                  value={username}
-                />
-              </View>
+    <ImageBackground
+      source={bg}
+      style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginTop: SCREEN_WIDTH * 0.15,
+          marginBottom: 30,
+        }}>
+        <Text
+          style={{
+            fontSize: 20,
+            fontFamily: fonts.medium,
+            color: COLOR.txtColor,
+          }}>
+          Login
+        </Text>
+      </View>
+      <View>
+        <Image
+          source={logo1}
+          style={{
+            width: 100,
+            height: 100,
+            marginBottom: 40,
+            alignSelf: 'center',
+          }}
+        />
+        <Input
+          heading={'Email'}
+          title="Email"
+          onChange={txt => setEmail(txt)}
+        />
 
-              <View style={styles.textInput}>
-                <TextInput
-                  style={{
-                    padding: 5,
-                    fontSize: 18,
-                    width: '85%',
-                    color: '#000',
-                  }}
-                  placeholder="Password"
-                  placeholderTextColor="#3228"
-                  secureTextEntry={true}
-                  onChangeText={password => setPassword(password)}
-                  value={password}
-                />
-              </View>
-
-              <TouchableOpacity
-                style={styles.btnLogin}
-                onPress={() => handleLogin()}>
-                <Text
-                  style={{fontSize: 20, fontWeight: 'bold', color: 'white'}}>
-                  Login
-                </Text>
-              </TouchableOpacity>
-
-              <Text
-                style={{
-                  fontSize: 20,
-                  margin: 14,
-                  alignSelf: 'center',
-                  fontWeight: 'bold',
-                  color: '#fff',
-                }}>
-                {' '}
-                OR{' '}
-              </Text>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                <Text style={{fontSize: 17, color: '#fff'}}>
-                  {' '}
-                  Don't have an account?{' '}
-                </Text>
-                <Text
-                  style={{fontSize: 20, fontWeight: 'bold', color: '#fff'}}
-                  onPress={() => navigation.navigate('SignupScreen')}>
-                  SignUp{' '}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </ImageBackground>
-    </View>
+        <Input
+          heading={'Password'}
+          title="Password"
+          onChange={txt => setPassword(txt)}
+        />
+      </View>
+      <CustomButton
+        title="Login"
+        onPress={() => handleLogin()}
+        style={{marginTop: 40}}
+      />
+      <Text
+        style={{color: COLOR.secondary, textAlign: 'center', marginTop: 20}}>
+        __________________ OR ________________
+      </Text>
+      <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>
+        <Text
+          style={{color: COLOR.secondary, textAlign: 'center', marginTop: 20}}>
+          Don't have an account? Signup
+        </Text>
+      </TouchableOpacity>
+    </ImageBackground>
   );
 };
 
@@ -137,6 +119,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+    paddingHorizontal: 16,
   },
   backgroundImage: {
     flex: 1,

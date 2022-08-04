@@ -1,35 +1,43 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+} from 'react-native';
+import CustomButton from '../reuseable/CustomButton';
+import {fonts} from '../CONSTANTS/fonts';
+import {bg} from '../CONSTANTS/images';
 const Dashboard = ({navigation}) => {
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={bg}
+      style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
       <Text
         style={{
           color: '#000',
           fontSize: 28,
-          marginTop: 30,
+          marginTop: 50,
           marginBottom: 20,
-          fontWeight: 'bold',
+          // fontWeight: 'bold',
+          fontFamily: fonts.regular,
         }}>
-        Mini Admin
+        Hostel Manager
       </Text>
-      <TouchableOpacity
-        style={styles.btn}
-        onPress={() => navigation.navigate('AddHostel')}>
-        <Text style={styles.btnText}>Add Hostel</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.btn}
-        onPress={() => navigation.navigate('ViewHostels')}>
-        <Text style={styles.btnText}>View Hostels</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.btn}
-        onPress={() => navigation.navigate('BookingRequest')}>
-        <Text style={styles.btnText}>Booking Request</Text>
-      </TouchableOpacity>
-    </View>
+      <CustomButton
+        title="Add Hostel"
+        onPress={() => navigation.navigate('AddHostel')}
+      />
+      <CustomButton
+        title="View Hostels"
+        onPress={() => navigation.navigate('ViewHostels')}
+      />
+      <CustomButton
+        title="Booking Request"
+        onPress={() => navigation.navigate('BookingRequest')}
+      />
+    </ImageBackground>
   );
 };
 
@@ -40,19 +48,5 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
-  },
-  btn: {
-    backgroundColor: '#000',
-    height: 50,
-    width: '90%',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  btnText: {
-    color: '#fff',
-
-    fontWeight: 'bold',
   },
 });

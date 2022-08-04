@@ -8,183 +8,199 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
+import {COLOR} from '../CONSTANTS/Colors';
+import {fonts} from '../CONSTANTS/fonts';
+import CustomButton from '../reuseable/CustomButton';
+import Input from '../reuseable/Input';
+import {bg, logo2} from '../CONSTANTS/images';
 import axios from 'axios';
+import {api} from '../CONSTANTS/api';
+
+const SCREEN_HEIGHT = Dimensions.get('screen').height;
+const SCREEN_WIDTH = Dimensions.get('screen').width;
+
 const SignupScreen = ({navigation}) => {
-  const [username, setUsername] = useState('');
-  const [contactno, setContactno] = useState('');
+  const [index, setIndex] = useState(0);
+  const [selectedAccount, setSelectedAccount] = useState('');
+
+  const [firstname, setFirstname] = useState('');
+  const [lastname, setLastname] = useState('');
+  const [email, setEmail] = useState('');
   const [cnic, setCnic] = useState('');
-  const [occuption, setOccuption] = useState('');
+  const [phoneno, setPhoneno] = useState('');
+  const [occupation, setOccupation] = useState('');
   const [password, setPassword] = useState('');
   const [confirmpassword, setConfirmpassword] = useState('');
-  const [accounttype, setAccounttype] = useState('user');
+  const [accounttype, setAccounttype] = useState('');
 
-  const handleSignup = () => {
-    console.log(
-      username,
-      contactno,
-      cnic,
-      occuption,
-      accounttype,
-      password,
-      confirmpassword,
-    );
+  const checkValidation = () => {
     if (
-      username.length === 0 ||
-      contactno.length === 0 ||
+      firstname.length == 0 ||
+      lastname.length === 0 ||
+      email.length === 0 ||
       cnic.length === 0 ||
-      occuption.length === 0 ||
-      accounttype.length == 0 ||
-      password.length == 0 ||
-      confirmpassword.length == 0
+      phoneno.length === 0 ||
+      password.length === 0 ||
+      confirmpassword.length === 0
     ) {
-      alert('All fields are required.');
+      alert('Please Fill All Fields');
+      return false;
+    } else if (accounttype === 'User' && occupation.length === 0) {
+      alert('Please enter your occupation');
+      return false;
     } else if (password !== confirmpassword) {
       alert('Password and confirm passwords are mismatch');
+      return false;
     } else {
-      axios
-        .post('http://192.168.1.102/HMSAPI/api/Auth/Register', {
-          UserName: username,
-          ContactNo: contactno,
-          CNIC: cnic,
-          Occupation: occuption,
-          Password: password,
-          AccountType: accounttype,
-        })
-        .then(response => {
-          alert('Register Successfully.');
-        })
-        .catch(err => alert(err));
+      return true;
+    }
+  };
+
+  const handleSignup = () => {
+    if (checkValidation()) {
+      const params = {
+        FirstName: firstname,
+        LastName: lastname,
+        Email: email,
+        CNIC: cnic,
+        PhoneNo: phoneno,
+        Password: password,
+        AccountType: accounttype,
+      };
+      accounttype === 'User' && (params.Occupation = occupation),
+        axios
+          .post(api.signup, params)
+          .then(response => {
+            // accounttype === 'User'
+            //   ? navigation.navigate('HomeScreen')
+            //   : navigation.navigate('Dashboard');
+            alert('Register Successfully.');
+          })
+          .catch(err => alert(err));
     }
   };
   return (
-    <View style={styles.container}>
-      <ImageBackground
-        source={require('../../assests/images/6.jpg')}
-        resizeMode={'stretch'}
-        style={styles.backgroundImage}>
-        <ScrollView>
-          <Image
-            source={require('../../assests/images/logo1.png')}
-            style={{
-              width: 150,
-              height: 150,
-              alignSelf: 'center',
-              marginBottom: 20,
-            }}
-          />
-          <View style={styles.form}>
-            <View style={styles.textInput}>
-              <TextInput
-                style={{padding: 5, fontSize: 18, width: '85%', color: '#000'}}
-                placeholder="UserName"
-                placeholderTextColor="#3228"
-                onChangeText={txt => setUsername(txt)}
-                value={username}
-              />
-            </View>
-
-            <View style={styles.textInput}>
-              <TextInput
-                style={{padding: 5, fontSize: 18, width: '85%', color: '#000'}}
-                placeholder="Contact No"
-                placeholderTextColor="#3228"
-                onChangeText={txt => setContactno(txt)}
-                value={contactno}
-              />
-            </View>
-            <View style={styles.textInput}>
-              <TextInput
-                style={{padding: 5, fontSize: 18, width: '85%', color: '#000'}}
-                placeholder="CNIC"
-                placeholderTextColor="#3228"
-                onChangeText={txt => setCnic(txt)}
-                value={cnic}
-              />
-            </View>
-            <View style={styles.textInput}>
-              <TextInput
-                style={{padding: 5, fontSize: 18, width: '85%', color: '#000'}}
-                placeholder="Occupation"
-                placeholderTextColor="#3228"
-                onChangeText={txt => setOccuption(txt)}
-                value={occuption}
-              />
-            </View>
-            <View style={{...styles.textInput, padding: 0}}>
-              <Picker
-                style={{width: '100%', height: 0}}
-                selectedValue={accounttype}
-                onValueChange={(itemValue, itemIndex) =>
-                  setAccounttype(itemValue)
-                }>
-                <Picker.Item label="User" value="user" />
-                <Picker.Item label="Admin" value="admin" />
-                <Picker.Item label="Super Admin" value="super admin" />
-              </Picker>
-            </View>
-            <View style={styles.textInput}>
-              <TextInput
-                style={{padding: 5, fontSize: 18, width: '85%', color: '#000'}}
-                placeholder="Password"
-                placeholderTextColor="#3228"
-                secureTextEntry={true}
-                onChangeText={password => setPassword(password)}
-                value={password}
-              />
-            </View>
-            <View style={styles.textInput}>
-              <TextInput
-                style={{padding: 5, fontSize: 18, width: '85%', color: '#000'}}
-                placeholder="Confirm Password"
-                placeholderTextColor="#3228"
-                secureTextEntry={true}
-                onChangeText={password => setConfirmpassword(password)}
-                value={confirmpassword}
-              />
-            </View>
-
+    <ImageBackground
+      source={bg}
+      style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginTop: SCREEN_WIDTH * 0.15,
+          marginBottom: 30,
+        }}>
+        <Text
+          style={{
+            fontSize: 20,
+            fontFamily: fonts.medium,
+            color: COLOR.txtColor,
+          }}>
+          Create Account
+        </Text>
+      </View>
+      {index === 0 ? (
+        <View style={styles.container}>
+          <Text style={styles.title}>Choose your preffered account</Text>
+          <View style={{flex: 0.8, marginTop: 30}}>
             <TouchableOpacity
-              style={styles.btnLogin}
-              onPress={() => handleSignup()}>
-              <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}}>
-                SignUp
-              </Text>
+              style={{
+                ...styles.accountContainer,
+                borderWidth: accounttype === 'User' ? 1 : 0,
+              }}
+              onPress={() => setAccounttype('User')}>
+              <Image source={logo2} style={styles.accountContainerImage} />
+              <Text style={styles.accountContainerText}>User Account</Text>
             </TouchableOpacity>
-
-            <Text
-              style={{
-                fontSize: 20,
-                margin: 7,
-                alignSelf: 'center',
-                fontWeight: 'bold',
-                color: '#fff',
-              }}>
-              {' '}
-              OR{' '}
-            </Text>
-
             <TouchableOpacity
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Text style={{fontSize: 17, color: '#fff'}}>
-                {' '}
-                Already have an account?{' '}
-              </Text>
-              <Text
-                style={{fontSize: 20, fontWeight: 'bold', color: '#fff'}}
-                onPress={() => navigation.navigate('LoginScreen')}>
-                Login{' '}
+                ...styles.accountContainer,
+                borderWidth: accounttype === 'Hostel Manager' ? 1 : 0,
+              }}
+              onPress={() => setAccounttype('Hostel Manager')}>
+              <Image source={logo2} style={styles.accountContainerImage} />
+              <Text style={styles.accountContainerText}>
+                Hostel Manager Account
               </Text>
             </TouchableOpacity>
           </View>
+          <View
+            style={{
+              flex: 0.2,
+              justifyContent: 'center',
+            }}>
+            <CustomButton
+              title={'NEXT'}
+              style={{
+                height: 50,
+                width: 140,
+                borderRadius: 5,
+                alignSelf: 'flex-end',
+                backgroundColor:
+                  accounttype !== '' ? COLOR.secondary : '#ED1C244D',
+              }}
+              onPress={() => setIndex(index + 1)}
+            />
+          </View>
+        </View>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View>
+            <Input
+              heading={'First Name '}
+              title="Firstname"
+              onChange={txt => setFirstname(txt)}
+            />
+            <Input
+              heading={'Last Name '}
+              title="Lastname"
+              onChange={txt => setLastname(txt)}
+            />
+            <Input
+              heading={'Email'}
+              title="Email"
+              onChange={txt => setEmail(txt)}
+            />
+            <Input
+              heading={'CNIC'}
+              title="xxxxx-xxxxxxx-x"
+              onChange={txt => setCnic(txt)}
+            />
+            <Input
+              heading={'Phone Number'}
+              title="Phone Number"
+              onChange={txt => setPhoneno(txt)}
+            />
+
+            {accounttype === 'User' && (
+              <Input
+                heading={'Occupation'}
+                title="Occupation"
+                onChange={txt => setOccupation(txt)}
+              />
+            )}
+            <Input
+              heading={'Password'}
+              title="Password"
+              onChange={txt => setPassword(txt)}
+            />
+            <Input
+              heading={'Re-Enter Password'}
+              title="Re-Enter Password"
+              onChange={txt => setConfirmpassword(txt)}
+            />
+          </View>
+          <CustomButton
+            title="Sign Up"
+            style={{marginVertical: 30}}
+            onPress={() => handleSignup()}
+          />
         </ScrollView>
-      </ImageBackground>
-    </View>
+      )}
+    </ImageBackground>
   );
 };
 
@@ -194,6 +210,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  accountContainer: {
+    flex: 1,
+    borderColor: COLOR.secondary,
+    // borderWidth: 1,
+    borderRadius: 15,
+    marginTop: 30,
+    elevation: 2,
+    backgroundColor: COLOR.white,
+    height: 50,
+    width: SCREEN_WIDTH - 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  accountContainerText: {
+    color: COLOR.txtColor,
+    fontWeight: '500',
+    fontSize: 16,
+    fontFamily: fonts.medium,
+  },
+  accountContainerImage: {height: 40, width: 40, marginBottom: 5},
   backgroundImage: {
     flex: 1,
     opacity: 0.7,
@@ -238,5 +275,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 20,
     backgroundColor: '#000',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: COLOR.txtColor,
+    fontFamily: fonts.medium,
   },
 });

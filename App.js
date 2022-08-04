@@ -1,16 +1,19 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, StatusBar} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
 //authscreen
+import Welcome from './src/authscreens/Welcome';
 import LoginScreen from './src/authscreens/LoginScreen';
 import SignupScreen from './src/authscreens/SignupScreen';
-//Mini Admin
+//Mini Admin or Hostel Manager
 import Dashboard from './src/Mini Admin/Dashboard';
 import AddHostel from './src/Mini Admin/AddHostel';
 import ViewHostels from './src/Mini Admin/ViewHostels';
 import BookingRequest from './src/Mini Admin/BookingRequest';
+import AddRooms from './src/Mini Admin/AddRooms';
+import MapScreen from './src/Mini Admin/MapScreen';
 //Super Admin
 import SuperAdmin_Dashboard from './src/Super Admin/SuperAdmin_Dashboard';
 import VerifyHostels from './src/Super Admin/VerifyHostels';
@@ -35,7 +38,20 @@ const App = ({navigation}) => {
   }
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <StatusBar
+        backgroundColor={'transparent'}
+        barStyle={'dark-content'}
+        translucent
+      />
+      <Stack.Navigator
+        screenOptions={{headerShown: false}}
+        // initialRouteName={'MapScreen'}
+      >
+        <Stack.Screen
+          name="Welcome"
+          component={Welcome}
+          options={{headerShown: false}}
+        />
         <Stack.Screen
           name="LoginScreen"
           component={LoginScreen}
@@ -51,16 +67,37 @@ const App = ({navigation}) => {
           component={SignupScreen}
           options={{headerShown: false}}
         />
-        <Stack.Screen name="HomeScreen" component={HomeScreen} />
-        <Stack.Screen name="HostelDetail" component={HostelDetail} />
-        <Stack.Screen name="BookRoom" component={BookRoom} />
-        <Stack.Screen name="Feedback" component={Feedback} />
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
+          options={{headerShown: true}}
+        />
+        <Stack.Screen
+          name="HostelDetail"
+          component={HostelDetail}
+          options={{headerShown: true}}
+        />
+        <Stack.Screen
+          name="BookRoom"
+          component={BookRoom}
+          options={{headerShown: true}}
+        />
+        <Stack.Screen
+          name="Feedback"
+          component={Feedback}
+          options={{headerShown: true}}
+        />
 
         <Stack.Screen
           name="SuperAdmin_Dashboard"
           component={SuperAdmin_Dashboard}
+          options={{headerShown: true}}
         />
-        <Stack.Screen name="VerifyHostels" component={VerifyHostels} />
+        <Stack.Screen
+          name="VerifyHostels"
+          component={VerifyHostels}
+          options={{headerShown: true}}
+        />
         <Stack.Screen
           name="SuperAdmin_ViewHostels"
           component={SuperAdmin_ViewHostels}
@@ -68,8 +105,18 @@ const App = ({navigation}) => {
 
         <Stack.Screen name="Dashboard" component={Dashboard} />
         <Stack.Screen name="AddHostel" component={AddHostel} />
-        <Stack.Screen name="ViewHostels" component={ViewHostels} />
-        <Stack.Screen name="BookingRequest" component={BookingRequest} />
+        <Stack.Screen name="AddRooms" component={AddRooms} />
+        <Stack.Screen name="MapScreen" component={MapScreen} />
+        <Stack.Screen
+          name="ViewHostels"
+          component={ViewHostels}
+          options={{headerShown: true}}
+        />
+        <Stack.Screen
+          name="BookingRequest"
+          component={BookingRequest}
+          options={{headerShown: true}}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
