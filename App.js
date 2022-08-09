@@ -11,6 +11,7 @@ import SignupScreen from './src/authscreens/SignupScreen';
 import Dashboard from './src/Mini Admin/Dashboard';
 import AddHostel from './src/Mini Admin/AddHostel';
 import ViewHostels from './src/Mini Admin/ViewHostels';
+import PendingHostels from './src/Mini Admin/PendingHostels';
 import BookingRequest from './src/Mini Admin/BookingRequest';
 import AddRooms from './src/Mini Admin/AddRooms';
 import MapScreen from './src/Mini Admin/MapScreen';
@@ -18,17 +19,22 @@ import MapScreen from './src/Mini Admin/MapScreen';
 import SuperAdmin_Dashboard from './src/Super Admin/SuperAdmin_Dashboard';
 import VerifyHostels from './src/Super Admin/VerifyHostels';
 import SuperAdmin_ViewHostels from './src/Super Admin/SuperAdmin_ViewHostels';
+//User
+import UserDashboard from './src/User/UserDashboard';
 
 import SplashScreen from './src/SplashScreen';
 import HomeScreen from './src/HomeScreen';
 import HostelDetail from './src/HostelDetail';
 import BookRoom from './src/BookRoom';
 import Feedback from './src/Feedback';
-
+import MapViewScreen from './src/MapView';
+import './global.js';
 const Stack = createNativeStackNavigator();
 const App = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
+    global.user = [];
+    global.user_id = 0;
     setTimeout(() => {
       setLoading(false);
     }, 5000);
@@ -36,6 +42,7 @@ const App = ({navigation}) => {
   if (loading) {
     return <SplashScreen />;
   }
+
   return (
     <NavigationContainer>
       <StatusBar
@@ -77,11 +84,7 @@ const App = ({navigation}) => {
           component={HostelDetail}
           options={{headerShown: true}}
         />
-        <Stack.Screen
-          name="BookRoom"
-          component={BookRoom}
-          options={{headerShown: true}}
-        />
+        <Stack.Screen name="BookRoom" component={BookRoom} />
         <Stack.Screen
           name="Feedback"
           component={Feedback}
@@ -91,7 +94,6 @@ const App = ({navigation}) => {
         <Stack.Screen
           name="SuperAdmin_Dashboard"
           component={SuperAdmin_Dashboard}
-          options={{headerShown: true}}
         />
         <Stack.Screen
           name="VerifyHostels"
@@ -101,6 +103,7 @@ const App = ({navigation}) => {
         <Stack.Screen
           name="SuperAdmin_ViewHostels"
           component={SuperAdmin_ViewHostels}
+          options={{headerShown: true, title: 'ViewHostel'}}
         />
 
         <Stack.Screen name="Dashboard" component={Dashboard} />
@@ -108,8 +111,18 @@ const App = ({navigation}) => {
         <Stack.Screen name="AddRooms" component={AddRooms} />
         <Stack.Screen name="MapScreen" component={MapScreen} />
         <Stack.Screen
+          name="MapViewScreen"
+          component={MapViewScreen}
+          options={{headerShown: true}}
+        />
+        <Stack.Screen
           name="ViewHostels"
           component={ViewHostels}
+          options={{headerShown: true}}
+        />
+        <Stack.Screen
+          name="PendingHostels"
+          component={PendingHostels}
           options={{headerShown: true}}
         />
         <Stack.Screen
@@ -117,6 +130,8 @@ const App = ({navigation}) => {
           component={BookingRequest}
           options={{headerShown: true}}
         />
+
+        <Stack.Screen name="UserDashboard" component={UserDashboard} />
       </Stack.Navigator>
     </NavigationContainer>
   );

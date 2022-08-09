@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Avatar,
   Button,
@@ -7,56 +7,113 @@ import {
   Paragraph,
   Searchbar,
 } from 'react-native-paper';
-import {View, ScrollView} from 'react-native';
-const VerifyHostels = () => {
-  const [searchQuery, setSearchQuery] = React.useState('');
+import {View, FlatList, Text, ScrollView, RefreshControl} from 'react-native';
+import axios from 'axios';
+import {api} from '../CONSTANTS/api';
+import {COLOR} from '../CONSTANTS/Colors';
+import {hostel_1} from '../CONSTANTS/images';
 
+const VerifyHostels = ({navigation}) => {
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [data, setData] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const onChangeSearch = query => setSearchQuery(query);
+  useEffect(() => {
+    getHostels();
+  }, []);
+
+  const getHostels = () => {
+    axios
+      .get(api.get_Hostels_Request)
+      .then(res => {
+        setData(res.data);
+      })
+      .catch(err => alert(err))
+      .finally(() => setRefreshing(false));
+  };
+
+  const handleAccept = id => {
+    axios
+      .get(api.approve_Hostel, {
+        params: {id: id},
+      })
+      .then(res => {
+        alert(res.data.message);
+        //remove this record from list
+        const newData = data.filter(item => item.Hostel.Id !== id);
+        setData(newData);
+      })
+      .catch(err => alert(err));
+  };
+
+  const handleReject = id => {
+    axios
+      .get(api.reject_Hostel, {
+        params: {id: id},
+      })
+      .then(res => {
+        alert(res.data.message);
+        //remove this record from list
+        const newData = data.filter(item => item.Hostel.Id !== id);
+        setData(newData);
+      })
+      .catch(err => alert(err));
+  };
   return (
-    <ScrollView>
-      <Card style={{marginBottom: 7}}>
-        <Card.Cover source={require('../../assests/images/2.jpg')} />
-        <Card.Content>
-          <Title>The Residence Boys Hostel </Title>
-          <Paragraph>Phone No : 0311-xxxxxxxx</Paragraph>
-          <Paragraph>City : Rawalpindi</Paragraph>
-          <Paragraph>Total Rooms : 20</Paragraph>
-          <Paragraph>Address : Dheri Hassanabad, Rawalpindi</Paragraph>
-        </Card.Content>
-        <Card.Actions>
-          <Button>Reject</Button>
-          <Button>Accept</Button>
-        </Card.Actions>
-      </Card>
-      <Card style={{marginBottom: 7}}>
-        <Card.Cover source={require('../../assests/images/5.jpg')} />
-        <Card.Content>
-          <Title>Ibrahim Shaheed Boys Hostel</Title>
-          <Paragraph>Phone No : 0311-xxxxxxxx</Paragraph>
-          <Paragraph>City : Rawalpindi</Paragraph>
-          <Paragraph>Total Rooms : 20</Paragraph>
-          <Paragraph>Satellite Town, Rawalpindi</Paragraph>
-        </Card.Content>
-        <Card.Actions>
-          <Button>Reject</Button>
-          <Button>Accept</Button>
-        </Card.Actions>
-      </Card>
-      <Card style={{marginBottom: 7}}>
-        <Card.Cover source={require('../../assests/images/1.jpg')} />
-        <Card.Content>
-          <Title>Madina boys hostel</Title>
-          <Paragraph>Phone No : 0311-xxxxxxxx</Paragraph>
-          <Paragraph>City : Rawalpindi</Paragraph>
-          <Paragraph>Total Rooms : 20</Paragraph>
-          <Paragraph>New Katarian, Rawalpindi</Paragraph>
-        </Card.Content>
-        <Card.Actions>
-          <Button>Reject</Button>
-          <Button>Accept</Button>
-        </Card.Actions>
-      </Card>
-    </ScrollView>
+    <View style={{flex: 1}}>
+      {data.length === 0 ? (
+        <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+          <Text style={{fontSize: 16, fontWeight: '500'}}>No Record Found</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={data}
+          keyExtractor={(item, index) => item.Hostel.Id}
+          refreshControl={
+            <RefreshControl
+              colors={[COLOR.secondary, COLOR.primary]}
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true), getHostels();
+              }}
+            />
+          }
+          renderItem={item => {
+            return (
+              <Card
+                style={{marginBottom: 7}}
+                onPress={() =>
+                  navigation.navigate('HostelDetail', {
+                    Hostel: item.item.Hostel,
+                    Rooms: item.item.RoomsList,
+                  })
+                }>
+                <Card.Cover
+                  source={{
+                    uri: `${api.image}${item.item.Hostel.Image}`,
+                  }}
+                />
+                <Card.Content>
+                  <Title>{item.item.Hostel.HostelName} </Title>
+                  <Paragraph>Phone No : {item.item.Hostel.PhoneNo}</Paragraph>
+                  <Paragraph>City : {item.item.Hostel.City}</Paragraph>
+                  <Paragraph>Total Floor : {item.item.Hostel.Floor}</Paragraph>
+                  <Paragraph>Address : {item.item.Hostel.Address}</Paragraph>
+                </Card.Content>
+                <Card.Actions>
+                  <Button onPress={() => handleReject(item.item.Hostel.Id)}>
+                    Reject
+                  </Button>
+                  <Button onPress={() => handleAccept(item.item.Hostel.Id)}>
+                    Accept
+                  </Button>
+                </Card.Actions>
+              </Card>
+            );
+          }}
+        />
+      )}
+    </View>
   );
 };
 

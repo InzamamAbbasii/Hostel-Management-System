@@ -1,11 +1,25 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  Platform,
+  ToastAndroid,
+} from 'react-native';
 import MapView, {PROVIDER_GOOGLE, PROVIDER_DEFAULT} from 'react-native-maps';
+import Icon from 'react-native-vector-icons/Ionicons';
+import {Searchbar} from 'react-native-paper';
 import CustomButton from '../reuseable/CustomButton';
-import {marker} from '../CONSTANTS/images';
+import {logo1, marker} from '../CONSTANTS/images';
 import Geolocation from 'react-native-geolocation-service';
 import {PERMISSIONS, request} from 'react-native-permissions';
 import Geocoder from 'react-native-geocoder';
+import {COLOR} from '../CONSTANTS/Colors';
+import CustomSearchBar from '../reuseable/CustomSearchBar';
+
 const MapScreen = ({navigation}) => {
   const mapViewRef = useRef();
   const [coordinates, setCoordinates] = useState({
@@ -14,6 +28,7 @@ const MapScreen = ({navigation}) => {
     latitudeDelta: 0.01,
     longitudeDelta: 0.23,
   });
+  const [searchText, setSearchText] = useState('');
   useEffect(() => {
     getCurrentLocation();
   }, []);
@@ -23,7 +38,6 @@ const MapScreen = ({navigation}) => {
     if ((response = 'granted')) {
       Geolocation.getCurrentPosition(
         ({coords}) => {
-          console.log(coords);
           let r = {
             latitude: coords.latitude,
             longitude: coords.longitude,
@@ -58,17 +72,19 @@ const MapScreen = ({navigation}) => {
       lat: coordinates.latitude,
       lng: coordinates.longitude,
     };
-    console.log(NY);
     Geocoder.geocodePosition(NY)
       .then(res => {
-        console.log(res[0].formattedAddress);
-        navigation.navigate('AddHostel', {
-          Address: res[0].formattedAddress,
-          Location: {
-            latitude: coordinates.latitude,
-            longitude: coordinates.longitude,
-          },
-        });
+        console.log(res[0]);
+        if (typeof res[0] === 'undefined') {
+          alert('Please Choose Correct Location');
+        } else {
+          navigation.navigate('AddHostel', {
+            Address: res[0].formattedAddress,
+            Latitude: coordinates.latitude,
+            Longitude: coordinates.longitude,
+            City: res[0].locality,
+          });
+        }
       })
       .catch(err => {
         let errorMsg = 'Error in geoCoder' + err;
@@ -84,8 +100,62 @@ const MapScreen = ({navigation}) => {
       longitudeDelta: region.longitudeDelta,
     });
   };
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // store.dispatch({ type: "CHANGE_INPUT", val: value });
+      handleSearch();
+    }, 2000);
+
+    // if this effect run again, because `value` changed, we remove the previous timeout
+    return () => clearTimeout(timeout);
+  }, [searchText]);
+
+  const handleSearch = () => {
+    console.log(searchText);
+    // Address Geocoding
+    if (searchText) {
+      Geocoder.geocodeAddress(searchText)
+        .then(res => {
+          // res is an Array of geocoding object (see below)
+          if (res.length < 1) {
+            ToastAndroid.show(
+              'Location not found.Please enter correct address.',
+              ToastAndroid.LONG,
+            );
+          } else {
+            let r = {
+              latitude: res[0].position.lat,
+              longitude: res[0].position.lng,
+              latitudeDelta: 0.03,
+              longitudeDelta: 0.01,
+            };
+            mapViewRef.current.animateToRegion(r, 2000);
+          }
+        })
+        .catch(err => {
+          let errorMsg = 'Error in geoCoder' + err;
+          alert(errorMsg);
+          // ToastAndroid.show(errorMsg, ToastAndroid.LONG);
+        });
+    } else {
+      // ToastAndroid.show('Please Enter Location', ToastAndroid.LONG);
+      // alert('Please Enter Location');
+    }
+  };
+
   return (
     <View style={{flex: 1}}>
+      <Searchbar
+        placeholder="Search"
+        onChangeText={txt => setSearchText(txt)}
+        value={searchText}
+        style={{
+          zIndex: 999,
+          marginTop: 50,
+          marginHorizontal: 10,
+        }}
+      />
+
       <MapView
         ref={mapViewRef}
         style={StyleSheet.absoluteFillObject}

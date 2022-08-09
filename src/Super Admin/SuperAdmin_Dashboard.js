@@ -1,53 +1,46 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+} from 'react-native';
+import CustomButton from '../reuseable/CustomButton';
+import {bg} from '../CONSTANTS/images';
+import {fonts} from '../CONSTANTS/fonts';
+import {COLOR} from '../CONSTANTS/fonts';
 
 const SuperAdmin_Dashboard = ({navigation}) => {
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={bg}
+      style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
       <Text
         style={{
           color: '#000',
           fontSize: 28,
-          marginTop: 30,
+          marginTop: 50,
           marginBottom: 20,
-          fontWeight: 'bold',
+          // fontWeight: 'bold',
+          fontFamily: fonts.regular,
         }}>
-        Super Admin
+        Super Admin Dashboard
       </Text>
-      <TouchableOpacity
-        style={styles.btn}
-        onPress={() => navigation.navigate('VerifyHostels')}>
-        <Text style={styles.btnText}>Verify Hostel</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.btn}
-        onPress={() => navigation.navigate('SuperAdmin_ViewHostels')}>
-        <Text style={styles.btnText}>View Hostels</Text>
-      </TouchableOpacity>
-    </View>
+      <CustomButton
+        title="Verify Hostel"
+        onPress={() => navigation.navigate('VerifyHostels')}
+      />
+      <CustomButton
+        title="View Hostel"
+        onPress={() => navigation.navigate('SuperAdmin_ViewHostels')}
+      />
+      <CustomButton
+        title="Logout"
+        onPress={() => navigation.replace('LoginScreen')}
+      />
+    </ImageBackground>
   );
 };
 
 export default SuperAdmin_Dashboard;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-  },
-  btn: {
-    backgroundColor: '#000',
-    height: 50,
-    width: '90%',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  btnText: {
-    color: '#fff',
-
-    fontWeight: 'bold',
-  },
-});

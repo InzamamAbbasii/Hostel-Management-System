@@ -39,14 +39,16 @@ const LoginScreen = ({navigation}) => {
         })
         .then(res => {
           if (res.data.success === false) alert(res.data.message);
-          else if (res.data.data.AccountType === 'User')
-            navigation.navigate('Dashboard');
-          else if (username.toLocaleLowerCase() == 'admin') {
-            navigation.navigate('Dashboard');
-          } else if (username.toLocaleLowerCase() === 'super admin') {
-            navigation.navigate('SuperAdmin_Dashboard');
-          } else {
-            navigation.navigate('HomeScreen');
+          else {
+            global.user[0] = res.data.data;
+            global.user_id = res.data.data.Id;
+            if (res.data.data.AccountType === 'Hostel Manager')
+              navigation.navigate('Dashboard');
+            else if (res.data.data.AccountType === 'Admin') {
+              navigation.navigate('SuperAdmin_Dashboard');
+            } else {
+              navigation.navigate('UserDashboard');
+            }
           }
         })
         .catch(err => alert(err));
@@ -56,59 +58,65 @@ const LoginScreen = ({navigation}) => {
     <ImageBackground
       source={bg}
       style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginTop: SCREEN_WIDTH * 0.15,
-          marginBottom: 30,
-        }}>
-        <Text
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View
           style={{
-            fontSize: 20,
-            fontFamily: fonts.medium,
-            color: COLOR.txtColor,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginTop: SCREEN_WIDTH * 0.15,
+            marginBottom: 30,
           }}>
-          Login
-        </Text>
-      </View>
-      <View>
-        <Image
-          source={logo1}
-          style={{
-            width: 100,
-            height: 100,
-            marginBottom: 40,
-            alignSelf: 'center',
-          }}
-        />
-        <Input
-          heading={'Email'}
-          title="Email"
-          onChange={txt => setEmail(txt)}
-        />
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: fonts.medium,
+              color: COLOR.txtColor,
+            }}>
+            Login
+          </Text>
+        </View>
+        <View>
+          <Image
+            source={logo1}
+            style={{
+              width: 100,
+              height: 100,
+              marginBottom: 40,
+              alignSelf: 'center',
+            }}
+          />
+          <Input
+            heading={'Email'}
+            title="Email"
+            onChange={txt => setEmail(txt)}
+          />
 
-        <Input
-          heading={'Password'}
-          title="Password"
-          onChange={txt => setPassword(txt)}
+          <Input
+            heading={'Password'}
+            title="Password"
+            onChange={txt => setPassword(txt)}
+          />
+        </View>
+        <CustomButton
+          title="Login"
+          onPress={() => handleLogin()}
+          style={{marginTop: 40}}
         />
-      </View>
-      <CustomButton
-        title="Login"
-        onPress={() => handleLogin()}
-        style={{marginTop: 40}}
-      />
-      <Text
-        style={{color: COLOR.secondary, textAlign: 'center', marginTop: 20}}>
-        __________________ OR ________________
-      </Text>
-      <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>
         <Text
           style={{color: COLOR.secondary, textAlign: 'center', marginTop: 20}}>
-          Don't have an account? Signup
+          __________________ OR ________________
         </Text>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>
+          <Text
+            style={{
+              color: COLOR.secondary,
+              textAlign: 'center',
+              marginTop: 20,
+            }}>
+            Don't have an account? Signup
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
     </ImageBackground>
   );
 };

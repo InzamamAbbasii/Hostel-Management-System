@@ -30,6 +30,8 @@ const AddHostel = ({navigation, route}) => {
     floor: '',
     city: '',
     address: '',
+    latittude: '',
+    longitude: '',
     image: null,
   });
   const [image, setImage] = useState({
@@ -39,9 +41,15 @@ const AddHostel = ({navigation, route}) => {
   });
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      if (typeof route.params != 'undefined') {
-        console.log(route.params);
-        setHostel({...hostel, address: route.params.Address});
+      if (typeof route.params !== 'undefined') {
+        console.log(route.params.City);
+        setHostel({
+          ...hostel,
+          address: route.params.Address,
+          latittude: route.params.Latitude.toString(),
+          longitude: route.params.Longitude.toString(),
+          city: route.params.City !== null && route.params.City,
+        });
       }
     });
     return () => unsubscribe;
@@ -75,7 +83,6 @@ const AddHostel = ({navigation, route}) => {
             fileName: response.assets[0].fileName,
             fileType: response.assets[0].type,
           });
-          console.log(response.assets[0]);
         }
         //   this.setState({image: response.assets[0].uri});
         //   this.updateProfile(response.assets[0].uri);
@@ -103,16 +110,50 @@ const AddHostel = ({navigation, route}) => {
         Image: '',
         Location: '',
       };
+      const formdata = new FormData();
+      formdata.append('HostelName', hostel.name);
+      formdata.append('PhoneNo', hostel.phoneNo);
+      formdata.append('Floor', hostel.floor);
+      formdata.append('City', hostel.city);
+      formdata.append('Address', hostel.address);
+      formdata.append('Latitude', hostel.latittude);
+      formdata.append('Longitude', hostel.longitude);
+      formdata.append('User_Id', global.user_id);
+      image.fileName !== '' &&
+        formdata.append('File', {
+          uri: image.fileURI, //Your Image File Path
+          type: image.fileType,
+          name: image.fileName,
+        });
 
-      axios
-        .post(api.addHostel, params)
+      axios({
+        url: api.addHostel,
+        method: 'POST',
+        data: formdata,
+        headers: {
+          // Accept: 'application/json',
+          'Content-Type': 'multipart/form-data',
+        },
+      })
         .then(response => {
-          console.log(response.data);
-          navigation.navigate('AddRooms', {Id: response.data.Id});
+          if (response.data.Id) {
+            navigation.navigate('AddRooms', {Id: response.data.Id});
+          } else {
+            alert('Something went wrong.Data not inserted.');
+          }
         })
         .catch(err => {
           alert(err);
         });
+      // axios
+      //   .post(api.addHostel, formdata)
+      //   .then(response => {
+      //     console.log(response.data);
+      //     navigation.navigate('AddRooms', {Id: response.data.Id});
+      //   })
+      //   .catch(err => {
+      //     alert(err);
+      //   });
     }
   };
   return (
@@ -156,12 +197,26 @@ const AddHostel = ({navigation, route}) => {
           <Input
             heading={'City '}
             title="Enter City"
+            value={hostel.city}
             onChange={txt => setHostel({...hostel, city: txt})}
+          />
+          <Input
+            heading={'Latitude'}
+            title="Enter Latitude or choose from Google Map "
+            value={hostel.latittude}
+            onChange={txt => setHostel({...hostel, latittude: txt})}
+          />
+          <Input
+            heading={'Longitude'}
+            title="Enter Longitude or choose from Google Map "
+            value={hostel.longitude}
+            onChange={txt => setHostel({...hostel, longitude: txt})}
           />
           <Input
             heading={'Address '}
             title="Enter Address or choose from Google Map "
             value={hostel.address}
+            multiline={true}
             onChange={txt => setHostel({...hostel, address: txt})}
           />
           <CustomButton

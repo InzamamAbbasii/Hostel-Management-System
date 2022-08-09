@@ -17,13 +17,12 @@ const Dashboard = ({navigation}) => {
       <Text
         style={{
           color: '#000',
-          fontSize: 28,
+          fontSize: 27,
           marginTop: 50,
           marginBottom: 20,
-          // fontWeight: 'bold',
           fontFamily: fonts.regular,
         }}>
-        Hostel Manager
+        Hostel Manager Dashboard
       </Text>
       <CustomButton
         title="Add Hostel"
@@ -34,8 +33,16 @@ const Dashboard = ({navigation}) => {
         onPress={() => navigation.navigate('ViewHostels')}
       />
       <CustomButton
+        title="Waiting List"
+        onPress={() => navigation.navigate('PendingHostels')}
+      />
+      <CustomButton
         title="Booking Request"
         onPress={() => navigation.navigate('BookingRequest')}
+      />
+      <CustomButton
+        title="Logout"
+        onPress={() => navigation.replace('LoginScreen')}
       />
     </ImageBackground>
   );
