@@ -25,5 +25,6 @@ namespace HMSApi.Models
         public Nullable<double> Longitude { get; set; }
         public string Status { get; set; }
         public Nullable<int> User_Id { get; set; }
+        public string Gender { get; set; }
     }
 }

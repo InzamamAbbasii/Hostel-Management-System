@@ -16,3 +16,5 @@ export const whiteStr = require('../../assests/images/whiteStr.png');
 export const Backg = require('../../assests/images/Backg.png');
 export const marker = require('../../assests/images/marker.png');
 export const profile = require('../../assests/images/profile.png');
+export const back = require('../../assests/images/Back.png');
+export const backBtn = require('../../assests/images/backBtn.png');

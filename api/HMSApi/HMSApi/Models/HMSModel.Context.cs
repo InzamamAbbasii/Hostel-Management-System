@@ -25,10 +25,10 @@ namespace HMSApi.Models
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Hostel_Rooms> Hostel_Rooms { get; set; }
-        public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<Hostel> Hostels { get; set; }
-        public virtual DbSet<BookingRequest> BookingRequests { get; set; }
         public virtual DbSet<FeedBack> FeedBacks { get; set; }
+        public virtual DbSet<Hostel> Hostels { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<BookingRequest> BookingRequests { get; set; }
+        public virtual DbSet<Hostel_Rooms> Hostel_Rooms { get; set; }
     }
 }

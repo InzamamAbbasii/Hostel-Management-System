@@ -19,8 +19,10 @@ import MapScreen from './src/Mini Admin/MapScreen';
 import SuperAdmin_Dashboard from './src/Super Admin/SuperAdmin_Dashboard';
 import VerifyHostels from './src/Super Admin/VerifyHostels';
 import SuperAdmin_ViewHostels from './src/Super Admin/SuperAdmin_ViewHostels';
+import HostelManagersList from './src/Super Admin/HostelManagersList';
 //User
 import UserDashboard from './src/User/UserDashboard';
+import MyHostels from './src/User/MyHostels';
 
 import SplashScreen from './src/SplashScreen';
 import HomeScreen from './src/HomeScreen';
@@ -105,6 +107,10 @@ const App = ({navigation}) => {
           component={SuperAdmin_ViewHostels}
           options={{headerShown: true, title: 'ViewHostel'}}
         />
+        <Stack.Screen
+          name="HostelManagersList"
+          component={HostelManagersList}
+        />
 
         <Stack.Screen name="Dashboard" component={Dashboard} />
         <Stack.Screen name="AddHostel" component={AddHostel} />
@@ -132,6 +138,7 @@ const App = ({navigation}) => {
         />
 
         <Stack.Screen name="UserDashboard" component={UserDashboard} />
+        <Stack.Screen name="MyHostels" component={MyHostels} />
       </Stack.Navigator>
     </NavigationContainer>
   );

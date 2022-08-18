@@ -21,6 +21,8 @@ namespace HMSApi.Models
         public string CNIC { get; set; }
         public string PhoneNo { get; set; }
         public string Occupation { get; set; }
+        public string InstitudeName { get; set; }
+        public string Reg_No { get; set; }
         public string Password { get; set; }
         public string AccountType { get; set; }
     }

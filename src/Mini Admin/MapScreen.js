@@ -19,6 +19,7 @@ import {PERMISSIONS, request} from 'react-native-permissions';
 import Geocoder from 'react-native-geocoder';
 import {COLOR} from '../CONSTANTS/Colors';
 import CustomSearchBar from '../reuseable/CustomSearchBar';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const MapScreen = ({navigation}) => {
   const mapViewRef = useRef();
@@ -29,6 +30,7 @@ const MapScreen = ({navigation}) => {
     longitudeDelta: 0.23,
   });
   const [searchText, setSearchText] = useState('');
+
   useEffect(() => {
     getCurrentLocation();
   }, []);
@@ -41,16 +43,17 @@ const MapScreen = ({navigation}) => {
           let r = {
             latitude: coords.latitude,
             longitude: coords.longitude,
-            // latitudeDelta: 0.03,
-            // longitudeDelta: 0.01,
+            latitudeDelta: 0.03,
+            longitudeDelta: 0.01,
           };
-          // mapViewRef.current.animateToRegion(r, 2000);
-          let markersList = [];
-          markersList.push(r);
-          mapViewRef.current.fitToCoordinates(markersList, {
-            edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
-            animated: true,
-          });
+          setCoordinates(r);
+          mapViewRef.current.animateToRegion(r, 2000);
+          // let markersList = [];
+          // markersList.push(r);
+          // mapViewRef.current.fitToCoordinates(markersList, {
+          //   edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
+          //   animated: true,
+          // });
         },
         error => {
           if (error.code != 5) {
@@ -123,13 +126,20 @@ const MapScreen = ({navigation}) => {
               ToastAndroid.LONG,
             );
           } else {
+            console.log(res);
             let r = {
               latitude: res[0].position.lat,
               longitude: res[0].position.lng,
               latitudeDelta: 0.03,
               longitudeDelta: 0.01,
             };
-            mapViewRef.current.animateToRegion(r, 2000);
+            // mapViewRef.current.animateToRegion(r, 2000);
+            let markersList = [];
+            markersList.push(r);
+            mapViewRef.current.fitToCoordinates(markersList, {
+              edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
+              animated: true,
+            });
           }
         })
         .catch(err => {
@@ -171,7 +181,7 @@ const MapScreen = ({navigation}) => {
         onRegionChangeComplete={region => onRegionChange(region)}
         zoomEnabled={true}
         zoomControlEnabled={false}
-        showsUserLocation={false}
+        showsUserLocation={true}
         showsMyLocationButton={false}></MapView>
       <View style={styles.markerFixed}>
         <Image style={styles.marker} source={marker} />
@@ -181,6 +191,24 @@ const MapScreen = ({navigation}) => {
         onPress={() => handleSelect()}
         style={{position: 'absolute', bottom: 30}}
       />
+      <View
+        style={{
+          position: 'absolute',
+          top: 120,
+          right: 13,
+          zIndex: 1,
+        }}>
+        <TouchableOpacity
+          onPress={() => getCurrentLocation()}
+          style={{
+            backgroundColor: 'rgba(252, 252, 252, 0.9)',
+            borderRadius: 23,
+            padding: 12,
+            elevation: 2,
+          }}>
+          <MaterialIcons name="my-location" size={22} color={'#555'} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

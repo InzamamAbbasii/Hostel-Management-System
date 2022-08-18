@@ -16,8 +16,11 @@ namespace HMSApi.Models
     {
         public int Id { get; set; }
         public string RoomType { get; set; }
+        public Nullable<int> Price { get; set; }
+        public Nullable<int> TotalRooms { get; set; }
+        public Nullable<int> BedsInRoom { get; set; }
+        public string Facilites { get; set; }
         public string Description { get; set; }
-        public string Price { get; set; }
         public Nullable<int> H_Id { get; set; }
     }
 }

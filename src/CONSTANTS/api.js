@@ -23,9 +23,12 @@ export let api = {
   get_Hostels_Request: BASE_URL + 'api/Admin/Get_NewHostels_Request',
   approve_Hostel: BASE_URL + 'api/Admin/ApproveHostel',
   reject_Hostel: BASE_URL + 'api/Admin/RejectHostel',
+  get_HostelManagers_List: BASE_URL + 'api/Admin/GetHostelManagers',
 
   //User api's
   book_room: BASE_URL + 'api/User/BookRoom',
   addFeedback: BASE_URL + 'api/User/SaveFeedback',
   get_Rating_and_Reviews: BASE_URL + 'api/User/GetReviewsAndRating',
+  get_booked_hostels: BASE_URL + 'api/User/MyHostels',
+  checkout: BASE_URL + 'api/User/Checkout',
 };

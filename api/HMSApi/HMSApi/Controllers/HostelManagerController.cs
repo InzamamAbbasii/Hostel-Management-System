@@ -42,6 +42,7 @@ namespace HMSApi.Controllers
                 var Latitude = HttpContext.Current.Request.Form["Latitude"];
                 var Longitude = HttpContext.Current.Request.Form["Longitude"];
                 var User_Id = HttpContext.Current.Request.Form["User_Id"];
+                var Gender = HttpContext.Current.Request.Form["Gender"];
 
                 Hostel hostel = new Hostel();
                 hostel.HostelName = HostelName;
@@ -49,7 +50,8 @@ namespace HMSApi.Controllers
                 hostel.Floor = Floor;
                 hostel.City = City;
                 hostel.Address = Address;
-                if(Latitude!=null || Longitude != null)
+                hostel.Gender = Gender;
+                if (Latitude!=null || Longitude != null)
                 {
                   hostel.Latitude = float.Parse(Latitude);
                   hostel.Longitude = float.Parse(Longitude);
@@ -95,16 +97,122 @@ namespace HMSApi.Controllers
         }
 
         [HttpGet]
+        //Getting all approved hostels 
+        public object GetRating(int id)
+        {
+            try
+            {
+                var rating = db.FeedBacks.Where(w => w.H_Id == id).GroupBy(g => g.Rating).Select(s => new
+                {
+                    s.Key,
+                    Total = s.Count()
+                });
+                var total = 0.0;
+                var sum = 0.0;
+                var One_Star = 0;
+                var Two_Star = 0;
+                var Three_Star = 0;
+                var Four_Star = 0;
+                var Five_Star = 0;
+                var TotalRatingCount = 0.0;
+                var TotalReviews = 0.0;
+                var AverageRating = 0.0;
+                foreach (var item in rating)
+                {
+                    if (item.Key == 1.0 || item.Key == 1)
+                        One_Star = item.Total;
+                    else if (item.Key == 2.0 || item.Key == 2)
+                        Two_Star = item.Total;
+                    else if (item.Key == 3.0 || item.Key == 3)
+                        Three_Star = item.Total;
+                    else if (item.Key == 4.0 || item.Key == 4)
+                        Four_Star = item.Total;
+                    else if (item.Key == 5.0 || item.Key == 5)
+                        Five_Star = item.Total;
+                    var total_reviews_in_one_group = Convert.ToDouble(item.Total);// i.e 15 people give 5 star
+                    var rating_value_of_group = Convert.ToDouble(item.Key); // i.e for 5 star value is 5
+                    TotalRatingCount += rating_value_of_group * total_reviews_in_one_group; // i.e 5 * 15
+                    // add each group total reviews
+                    // i.e
+                    //  5 peoples  gives 5 star
+                    //  4 peoples  gives 3 star
+                    //  0 peoples  gives 1 star and so on....
+                    // sum = 5+4+0
+                    TotalReviews += total_reviews_in_one_group;
+                }
+                var obj = new
+                {
+                    //Lst = rating,
+                    One_Star,
+                    Two_Star,
+                    Three_Star,
+                    Four_Star,
+                    Five_Star,
+                    TotalRatingCount,
+                    TotalReviews,
+                    AverageRating = TotalReviews == 0 ? 0.0 : Math.Round(TotalRatingCount / TotalReviews, 1),
+                };
+                return obj;
+            }
+            catch (Exception ex)
+            {
+                return new { };
+            }
+        }
+
+        [HttpGet]
         public HttpResponseMessage GetPendingHostels(int user_id)
         {
             try
             {
-                var hostelsList = db.Hostels.Where(s => s.Status == "Pending" && s.User_Id==user_id)
-                                            .Select(s => new
-                                            {
-                                                Hostel = s,
-                                                RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).ToList(),
-                                            }).ToList();
+                /*     var hostelsList = db.Hostels.Where(s => s.Status == "Pending" && s.User_Id==user_id)
+                                                 .Select(s => new
+                                                 {
+                                                     Hostel = s,
+                                                     RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).ToList(),
+                                                 }).ToList();*/
+
+                var hostelsList = db.Hostels.Where(s => s.Status == "Pending" && s.User_Id == user_id).AsEnumerable()
+                                          .Select(s => new
+                                          {
+                                              Hostel = new
+                                              {
+                                                  s.Id,
+                                                  s.HostelName,
+                                                  s.PhoneNo,
+                                                  s.Floor,
+                                                  s.City,
+                                                  s.Address,
+                                                  s.Image,
+                                                  s.Latitude,
+                                                  s.Longitude,
+                                                  s.Status,
+                                                  s.User_Id,
+                                                  s.Gender,
+                                                  MinPrice = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Min(m => m.Price),
+                                                  MaxPrice = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Max(m => m.Price),
+                                                  TotalRooms = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Sum(sm => sm.TotalRooms),//total rooms in hostel
+                                                  TotalBookedRooms = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
+                                              },
+                                              RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.Id)
+                                                                         .Select(room => new
+                                                                         {
+                                                                             Id = room.Id,
+                                                                             RoomType = room.RoomType,
+                                                                             Price = room.Price,
+                                                                             Facilites = room.Facilites,
+                                                                             Description = room.Description,
+                                                                             H_Id = room.H_Id,
+                                                                             TotalRooms = room.TotalRooms,
+                                                                             TotalBeds = room.TotalRooms * room.BedsInRoom,
+                                                                             BedsInRoom = room.BedsInRoom,//total no of beds in one room
+                                                                             BookedBeds = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved" && w.RoomType == room.RoomType)
+                                                                         .GroupBy(g => g.RoomType)
+                                                                         .Select(r => r.Sum(c => c.NoOfBeds)).FirstOrDefault()
+                                                                         }).ToList(),
+                                              Rating = GetRating(s.Id),//calling seld created method for rating
+
+                                          }).ToList();
                 return Request.CreateResponse(HttpStatusCode.OK, hostelsList);
             }
             catch (Exception ex)
@@ -113,18 +221,62 @@ namespace HMSApi.Controllers
             }
         }
 
+     
+
         [HttpGet]
         public HttpResponseMessage GetApprovedHostels(int user_id)
         {
             try
             {
-                var hostelsList = db.Hostels.Where(s => s.Status == "Approved" && s.User_Id == user_id)
-                                            .Select(s => new
-                                            {
-                                                Hostel = s,
-                                                RoomsList = db.Hostel_Rooms.Where(w=>w.H_Id==s.Id).ToList(),
+                /* var hostelsList = db.Hostels.Where(s => s.Status == "Approved" && s.User_Id == user_id)
+                                             .Select(s => new
+                                             {
+                                                 Hostel = s,
+                                                 RoomsList = db.Hostel_Rooms.Where(w=>w.H_Id==s.Id).ToList(),
+                                             }).ToList();*/
+
+                var hostelsList = db.Hostels.Where(s => s.Status == "Approved" && s.User_Id == user_id).AsEnumerable()
+                                          .Select(s => new
+                                          {
+                                              Hostel = new
+                                              {
+                                                  s.Id,
+                                                  s.HostelName,
+                                                  s.PhoneNo,
+                                                  s.Floor,
+                                                  s.City,
+                                                  s.Address,
+                                                  s.Image,
+                                                  s.Latitude,
+                                                  s.Longitude,
+                                                  s.Status,
+                                                  s.User_Id,
+                                                  s.Gender,
+                                                  MinPrice = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Min(m => m.Price),
+                                                  MaxPrice = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Max(m => m.Price),
+                                                  TotalRooms = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Sum(sm => sm.TotalRooms),//total rooms in hostel
+                                                    TotalBookedRooms = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
+                                                },
+                                              RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.Id)
+                                                                         .Select(room => new
+                                                                         {
+                                                                             Id = room.Id,
+                                                                             RoomType = room.RoomType,
+                                                                             Price = room.Price,
+                                                                             Facilites = room.Facilites,
+                                                                             Description = room.Description,
+                                                                             H_Id = room.H_Id,
+                                                                             TotalRooms = room.TotalRooms,
+                                                                             TotalBeds = room.TotalRooms * room.BedsInRoom,
+                                                                             BedsInRoom = room.BedsInRoom,//total no of beds in one room
+                                                                               BookedBeds = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved" && w.RoomType == room.RoomType)
+                                                                         .GroupBy(g => g.RoomType)
+                                                                         .Select(r => r.Sum(c => c.NoOfBeds)).FirstOrDefault()
+                                                                         }).ToList(),
+                                              Rating = GetRating(s.Id),//calling seld created method for rating
+
                                             }).ToList();
-                    
+
                 return Request.CreateResponse(HttpStatusCode.OK, hostelsList);
             }
             catch (Exception ex)
@@ -152,7 +304,7 @@ namespace HMSApi.Controllers
                                                        s.RequestInfo.BookingDate,
                                                        s.RequestInfo.CheckoutDate,
                                                        s.RequestInfo.RoomType,
-                                                       s.RequestInfo.NoOfRooms,
+                                                       s.RequestInfo.NoOfBeds,
                                                        Name = s.UserInfo.FirstName+" "+s.UserInfo.LastName,
                                                        s.UserInfo.Email,
                                                        s.UserInfo.CNIC,
@@ -239,6 +391,7 @@ namespace HMSApi.Controllers
             }
         }
 
+       
 
     }
 }

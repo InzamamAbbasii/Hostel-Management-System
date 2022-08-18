@@ -13,7 +13,7 @@ import {api} from '../CONSTANTS/api';
 import {COLOR} from '../CONSTANTS/Colors';
 import {hostel_1} from '../CONSTANTS/images';
 
-const VerifyHostels = ({navigation}) => {
+const VerifyHostels = ({navigation, route}) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [data, setData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -24,7 +24,11 @@ const VerifyHostels = ({navigation}) => {
 
   const getHostels = () => {
     axios
-      .get(api.get_Hostels_Request)
+      .get(api.get_Hostels_Request, {
+        params: {
+          id: route.params?.Id,
+        },
+      })
       .then(res => {
         setData(res.data);
       })

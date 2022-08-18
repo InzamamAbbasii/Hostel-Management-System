@@ -69,12 +69,15 @@ const BookingRequest = () => {
                   <Paragraph>CNIC : {item.item.CNIC}</Paragraph>
                   <Paragraph>Phone No : {item.item.PhoneNo}</Paragraph>
                   <Paragraph>Occupation : {item.item.Occupation}</Paragraph>
-                  <Paragraph>Booking Date : {item.item.BookingDate}</Paragraph>
                   <Paragraph>
-                    Checkout Date : {item.item.CheckoutDate}
+                    Booking Date :{' '}
+                    {new Date(item.item.BookingDate).toLocaleDateString()}
                   </Paragraph>
+                  {/* <Paragraph>
+                    Checkout Date : {item.item.CheckoutDate}
+                  </Paragraph> */}
                   <Paragraph>Room Type : {item.item.RoomType}</Paragraph>
-                  <Paragraph>No of Rooms : {item.item.NoOfRooms}</Paragraph>
+                  <Paragraph>No of Bed : {item.item.NoOfBeds}</Paragraph>
                 </Card.Content>
                 <Card.Actions>
                   <Button onPress={() => rejectBooking(item.item.Id)}>

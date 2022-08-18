@@ -79,6 +79,8 @@ const MapViewScreen = ({navigation}) => {
           return (
             <Marker
               key={key}
+              title={item.Hostel.HostelName}
+              description={`City : ${item.Hostel.City}`}
               coordinate={{
                 latitude: item.Hostel.Latitude,
                 longitude: item.Hostel.Longitude,

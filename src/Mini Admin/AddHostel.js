@@ -18,8 +18,11 @@ import {COLOR} from '../CONSTANTS/Colors';
 import {fonts} from '../CONSTANTS/fonts';
 import Input from '../reuseable/Input';
 import CustomButton from '../reuseable/CustomButton';
+import CustomHeader from '../reuseable/CustomHeader';
 import {api} from '../CONSTANTS/api';
 import axios from 'axios';
+import Geocoder from 'react-native-geocoder';
+
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
@@ -30,6 +33,7 @@ const AddHostel = ({navigation, route}) => {
     floor: '',
     city: '',
     address: '',
+    gender: 'Male',
     latittude: '',
     longitude: '',
     image: null,
@@ -39,6 +43,7 @@ const AddHostel = ({navigation, route}) => {
     fileName: '',
     fileType: '',
   });
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       if (typeof route.params !== 'undefined') {
@@ -91,41 +96,50 @@ const AddHostel = ({navigation, route}) => {
       console.warn(err);
     }
   };
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // navigation.navigate('AddRooms', {Id: 0});
     if (
       hostel.name === '' ||
-      hostel.phoneNo == '' ||
-      hostel.floor == '' ||
-      hostel.city == '' ||
-      hostel.address == ''
+      hostel.phoneNo === '' ||
+      hostel.floor === '' ||
+      hostel.city === '' ||
+      hostel.address === ''
     ) {
       alert('Please fill Required fields');
     } else {
-      const params = {
-        HostelName: hostel.name,
-        PhoneNo: hostel.phoneNo,
-        Floor: hostel.floor,
-        City: hostel.city,
-        Address: hostel.address,
-        Image: '',
-        Location: '',
-      };
       const formdata = new FormData();
       formdata.append('HostelName', hostel.name);
       formdata.append('PhoneNo', hostel.phoneNo);
       formdata.append('Floor', hostel.floor);
       formdata.append('City', hostel.city);
       formdata.append('Address', hostel.address);
-      formdata.append('Latitude', hostel.latittude);
-      formdata.append('Longitude', hostel.longitude);
+
+      if (hostel.latittude === '' || hostel.longitude === '') {
+        await getPositionFromAddress()
+          .then(res => {
+            console.log('response', res);
+            formdata.append('Latitude', res.position.lat);
+            formdata.append('Longitude', res.position.lng);
+          })
+          .catch(err => {
+            alert(err);
+            return;
+          });
+      } else {
+        formdata.append('Latitude', hostel.latittude);
+        formdata.append('Longitude', hostel.longitude);
+      }
+
       formdata.append('User_Id', global.user_id);
+      formdata.append('Gender', hostel.gender);
+
       image.fileName !== '' &&
         formdata.append('File', {
           uri: image.fileURI, //Your Image File Path
           type: image.fileType,
           name: image.fileName,
         });
-
+      console.log(formdata);
       axios({
         url: api.addHostel,
         method: 'POST',
@@ -145,38 +159,25 @@ const AddHostel = ({navigation, route}) => {
         .catch(err => {
           alert(err);
         });
-      // axios
-      //   .post(api.addHostel, formdata)
-      //   .then(response => {
-      //     console.log(response.data);
-      //     navigation.navigate('AddRooms', {Id: response.data.Id});
-      //   })
-      //   .catch(err => {
-      //     alert(err);
-      //   });
     }
+  };
+  const getPositionFromAddress = async () => {
+    return new Promise((resolve, reject) => {
+      Geocoder.geocodeAddress(hostel.address)
+        .then(res => {
+          if (typeof res[0] === 'undefined')
+            reject('Something went wrong.Please check details you enter.');
+          else resolve(res[0]);
+        })
+        .catch(err => reject(err));
+    });
   };
   return (
     <ImageBackground
       source={bg}
       style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: SCREEN_WIDTH * 0.15,
-            marginBottom: 30,
-          }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontFamily: fonts.medium,
-              color: COLOR.txtColor,
-            }}>
-            Add Hostel
-          </Text>
-        </View>
+        <CustomHeader text={'Add Hostel'} navi={navigation} />
         <View style={{flex: 1}}>
           <Input
             heading={'Name '}
@@ -186,6 +187,7 @@ const AddHostel = ({navigation, route}) => {
           <Input
             heading={'Phone No'}
             title="Enter Phone No."
+            keyboardType={'phone-pad'}
             onChange={txt => setHostel({...hostel, phoneNo: txt})}
           />
           {/* <Input heading={'Rooms '} title="Enter Total Rooms" /> */}
@@ -200,7 +202,60 @@ const AddHostel = ({navigation, route}) => {
             value={hostel.city}
             onChange={txt => setHostel({...hostel, city: txt})}
           />
-          <Input
+
+          <Text
+            style={{
+              marginTop: 10,
+              marginLeft: 3,
+              fontSize: 15,
+              fontFamily: fonts.regular,
+              color: '#303030',
+            }}>
+            Gender
+          </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              backgroundColor: '#FFF',
+              marginBottom: 10,
+              borderColor: '#E5E0EB',
+              borderWidth: 1,
+              borderRadius: 2,
+              padding: 5,
+              marginTop: 4,
+            }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: '50%',
+              }}>
+              <RadioButton
+                value={'Male'}
+                color={COLOR.secondary}
+                status={hostel.gender === 'Male' ? 'checked' : 'unchecked'}
+                onPress={() => setHostel({...hostel, gender: 'Male'})}
+              />
+              <Text style={styles.radioButtonText}>Male</Text>
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: '50%',
+              }}>
+              <RadioButton
+                value={'Female'}
+                color={COLOR.secondary}
+                status={hostel.gender === 'Female' ? 'checked' : 'unchecked'}
+                onPress={() => setHostel({...hostel, gender: 'Female'})}
+              />
+              <Text style={styles.radioButtonText}>Female</Text>
+            </View>
+          </View>
+
+          {/* <Input
             heading={'Latitude'}
             title="Enter Latitude or choose from Google Map "
             value={hostel.latittude}
@@ -211,7 +266,7 @@ const AddHostel = ({navigation, route}) => {
             title="Enter Longitude or choose from Google Map "
             value={hostel.longitude}
             onChange={txt => setHostel({...hostel, longitude: txt})}
-          />
+          /> */}
           <Input
             heading={'Address '}
             title="Enter Address or choose from Google Map "
@@ -228,12 +283,7 @@ const AddHostel = ({navigation, route}) => {
               borderWidth: 1,
               width: 100,
             }}
-            onPress={
-              () => navigation.navigate('MapScreen')
-              // alert(
-              //   'Map Feature is currently not available.We will add this soon.Thanks😍',
-              // )
-            }
+            onPress={() => navigation.navigate('MapScreen')}
           />
           {/* <Text style={styles.facilitesHeading}>Facilites</Text>
           <View style={styles.facilitesContainer}>
@@ -279,6 +329,7 @@ const AddHostel = ({navigation, route}) => {
         </View>
         <CustomButton
           title="Add Rooms"
+          // onPress={() => getPositionFromAddress()}
           onPress={() => handleSubmit()}
           style={{marginBottom: 20}}
         />

@@ -27,7 +27,6 @@ const HostelDetail = ({navigation, route}) => {
   const prevRoute = routes[routes.length - 2];
   useEffect(() => {
     console.log('prev screen', prevRoute.name, global.user[0].AccountType);
-    console.log(route.params.Hostel);
   }, []);
 
   const handleAccept = id => {
@@ -53,6 +52,12 @@ const HostelDetail = ({navigation, route}) => {
       })
       .catch(err => alert(err));
   };
+
+  const getAvailableRooms = (totalRooms, bookedRooms) => {
+    let tRooms = totalRooms === null ? 0 : totalRooms;
+    let bRooms = bookedRooms === null ? 0 : bookedRooms;
+    return tRooms - bRooms;
+  };
   const ItemDevider = () => {
     return (
       <View
@@ -64,164 +69,341 @@ const HostelDetail = ({navigation, route}) => {
         }}></View>
     );
   };
+
+  //user and MyHostels case
+  const handleCheckout = requestid => {
+    console.log({requestid});
+    axios
+      .get(api.checkout, {
+        params: {
+          requestId: requestid,
+        },
+      })
+      .then(response => {
+        console.log(response.data);
+        if (response.data.success === true) {
+          navigation.replace('Feedback', {
+            H_Id: response.data.data.H_Id,
+            AddFeedback: true,
+          });
+          alert(response.data.message);
+        } else {
+          alert(response.data.message);
+        }
+      })
+      .catch(err => alert(err));
+  };
   return (
     <View style={styles.container}>
-      {route.params && (
-        <ScrollView>
-          {route.params.Hostel.Image === null ? (
-            <Text style={styles.notFoundText}>No Image Added</Text>
-          ) : (
-            <Image
-              source={{
-                uri: `${api.image}${route.params.Hostel.Image}`,
-              }}
-              style={styles.image}
-            />
-          )}
-
-          <Card style={{marginBottom: 7}}>
-            <Card.Content>
-              <Title>Name : {route.params.Hostel.HostelName}</Title>
-              <Paragraph>
-                City{'         '} : {route.params.Hostel.City}
-              </Paragraph>
-              <Paragraph>
-                Contact {'  '}: {route.params.Hostel.PhoneNo}
-              </Paragraph>
-              <Paragraph>
-                Address{'  '} : {route.params.Hostel.Address}
-              </Paragraph>
-            </Card.Content>
-          </Card>
-
-          <ItemDevider />
-          <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
-            Rooms :{' '}
-          </Text>
-          {route.params.Rooms.length === 0 ? (
-            <View>
-              <Text style={styles.notFoundText}>No Room Added</Text>
-              {global.user[0].AccountType === 'Hostel Manager' && (
-                <CustomButton
-                  title="Add Room"
-                  onPress={() =>
-                    navigation.replace('AddRooms', {Id: route.params.Hostel.Id})
-                  }
-                  style={{marginBottom: 10}}
+      {prevRoute.name === 'MyHostels' && global.user[0].AccountType === 'User' //on user login when user want to see his own booked hostel
+        ? route.params && (
+            <ScrollView>
+              {route.params.Hostel.Image === null ? (
+                <Text style={styles.notFoundText}>No Image Added</Text>
+              ) : (
+                <Image
+                  source={{
+                    uri: `${api.image}${route.params.Hostel.Image}`,
+                  }}
+                  style={styles.image}
                 />
               )}
-            </View>
-          ) : (
-            route.params.Rooms.map((item, key) => {
-              return (
-                <Card style={{marginBottom: 7}} key={key}>
-                  <Card.Content>
-                    <Title>Room Type : {item.RoomType}</Title>
-                    <Paragraph>Description : {item.Description}</Paragraph>
-                    <Paragraph>Price : {item.Price}</Paragraph>
-                  </Card.Content>
-                </Card>
-              );
-            })
-          )}
-          <ItemDevider />
-          <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
-            Location :
-          </Text>
-          <View
-            style={{
-              backgroundColor: 'red',
-              height: 300,
 
-              backgroundColor: 'pink',
-              marginVertical: 10,
-              marginHorizontal: 10,
-              borderRadius: 15,
-              overflow: 'hidden',
-            }}>
-            <MapView
-              style={{
-                flex: 1,
-              }}
-              initialRegion={{
-                latitude:
-                  route.params?.Hostel.Latitude === null ||
-                  route.params?.Hostel.Latitude === ''
-                    ? 30.005495277822757
-                    : route.params?.Hostel.Latitude,
-                longitude:
-                  route.params?.Hostel.Longitude === null ||
-                  route.params?.Hostel.Longitude === ''
-                    ? 69.41553150890356
-                    : route.params?.Hostel.Longitude,
+              <Card style={{marginBottom: 7}}>
+                <Card.Content>
+                  <Title>Name : {route.params.Hostel.HostelName}</Title>
+                  <Paragraph>
+                    City{'         '} : {route.params.Hostel.City}
+                  </Paragraph>
+                  <Paragraph>
+                    Contact {'  '}: {route.params.Hostel.PhoneNo}
+                  </Paragraph>
+                  <Paragraph>
+                    Address{'  '} : {route.params.Hostel.Address}
+                  </Paragraph>
+                </Card.Content>
+              </Card>
+              <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
+                Room Detail :{' '}
+              </Text>
+              <Card style={{marginBottom: 5, elevation: 2}}>
+                <Card.Content>
+                  <Paragraph>Type : {route.params?.Rooms?.RoomType}</Paragraph>
+                  <Paragraph>
+                    Total Beds : {route.params?.Rooms?.NoOfBeds}
+                  </Paragraph>
+                  <Paragraph>
+                    Booking Date :{' '}
+                    {new Date(
+                      route.params?.Rooms?.BookingDate,
+                    ).toLocaleDateString()}
+                  </Paragraph>
+                  <Paragraph>Price : {route.params?.Rooms?.Price}</Paragraph>
+                </Card.Content>
+              </Card>
 
-                // latitudeDelta: 2.819748261678967,
-                // longitudeDelta: 3.680000826716423,
-                latitudeDelta: 0.078,
-                longitudeDelta: 0.23,
-              }}
-              onRegionChangeComplete={region => console.log(region)}
-              scrollEnabled={true}
-              zoomEnabled={false}
-              zoomControlEnabled={true}
-              showsUserLocation={false}
-              showsMyLocationButton={false}>
-              <Marker
-                coordinate={{
-                  latitude:
-                    route.params?.Hostel.Latitude === null ||
-                    route.params?.Hostel.Latitude === ''
-                      ? 30.005495277822757
-                      : route.params?.Hostel.Latitude,
-                  longitude:
-                    route.params?.Hostel.Longitude === null ||
-                    route.params?.Hostel.Longitude === ''
-                      ? 69.41553150890356
-                      : route.params?.Hostel.Longitude,
-                }}></Marker>
-            </MapView>
-          </View>
+              <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
+                Location :
+              </Text>
+              <View
+                style={{
+                  backgroundColor: 'red',
+                  height: 300,
+                  backgroundColor: 'pink',
+                  marginVertical: 10,
+                  marginHorizontal: 10,
+                  borderRadius: 15,
+                  overflow: 'hidden',
+                }}>
+                <MapView
+                  style={{
+                    flex: 1,
+                  }}
+                  initialRegion={{
+                    latitude:
+                      route.params?.Hostel.Latitude === null ||
+                      route.params?.Hostel.Latitude === ''
+                        ? 30.005495277822757
+                        : route.params?.Hostel.Latitude,
+                    longitude:
+                      route.params?.Hostel.Longitude === null ||
+                      route.params?.Hostel.Longitude === ''
+                        ? 69.41553150890356
+                        : route.params?.Hostel.Longitude,
+                    // latitudeDelta: 2.819748261678967,
+                    // longitudeDelta: 3.680000826716423,
+                    latitudeDelta: 0.078,
+                    longitudeDelta: 0.23,
+                  }}
+                  onRegionChangeComplete={region => console.log(region)}
+                  scrollEnabled={true}
+                  zoomEnabled={false}
+                  zoomControlEnabled={true}
+                  showsUserLocation={false}
+                  showsMyLocationButton={false}>
+                  <Marker
+                    coordinate={{
+                      latitude:
+                        route.params?.Hostel.Latitude === null ||
+                        route.params?.Hostel.Latitude === ''
+                          ? 30.005495277822757
+                          : route.params?.Hostel.Latitude,
+                      longitude:
+                        route.params?.Hostel.Longitude === null ||
+                        route.params?.Hostel.Longitude === ''
+                          ? 69.41553150890356
+                          : route.params?.Hostel.Longitude,
+                    }}></Marker>
+                </MapView>
+              </View>
 
-          {/* Showing Accept and Reject Button to Admin to Check and Verify Hostel */}
-          {global.user.length > 0 &&
-            global.user[0].AccountType === 'Admin' &&
-            prevRoute.name === 'VerifyHostels' && (
-              <View style={{flexDirection: 'row', marginBottom: 10}}>
+              {/* Showing Checkout Button to User */}
+              {route.params?.Status === 'Approved' && (
                 <CustomButton
-                  title="Reject"
-                  onPress={() => handleReject(route.params.Hostel.Id)}
+                  title="Checkout"
+                  onPress={() => handleCheckout(route.params?.Id)}
                   style={{flex: 1, margin: 7}}
                 />
-                <CustomButton
-                  title="Accept"
-                  onPress={() => handleAccept(route.params.Hostel.Id)}
-                  style={{flex: 1, margin: 7, backgroundColor: 'green'}}
+              )}
+            </ScrollView>
+          )
+        : route.params && (
+            <ScrollView>
+              {route.params.Hostel.Image === null ? (
+                <Text style={styles.notFoundText}>No Image Added</Text>
+              ) : (
+                <Image
+                  source={{
+                    uri: `${api.image}${route.params.Hostel.Image}`,
+                  }}
+                  style={styles.image}
                 />
+              )}
+
+              <Card style={{marginBottom: 7}}>
+                <Card.Content>
+                  <Title>Name : {route.params.Hostel.HostelName}</Title>
+                  <Paragraph>
+                    City{'         '} : {route.params.Hostel.City}
+                  </Paragraph>
+                  <Paragraph>
+                    Contact {'  '}: {route.params.Hostel.PhoneNo}
+                  </Paragraph>
+                  <Paragraph>
+                    Address{'  '} : {route.params.Hostel.Address}
+                  </Paragraph>
+                </Card.Content>
+              </Card>
+
+              <ItemDevider />
+              <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
+                Rooms :{' '}
+              </Text>
+              {route.params.Rooms.length === 0 ? (
+                <View>
+                  <Text style={styles.notFoundText}>No Room Added</Text>
+                  {global.user[0].AccountType === 'Hostel Manager' && (
+                    <CustomButton
+                      title="Add Room"
+                      onPress={() =>
+                        navigation.replace('AddRooms', {
+                          Id: route.params.Hostel.Id,
+                        })
+                      }
+                      style={{marginBottom: 10}}
+                    />
+                  )}
+                </View>
+              ) : (
+                route.params.Rooms.map((item, key) => {
+                  return (
+                    <Card key={key} style={{marginBottom: 5, elevation: 2}}>
+                      <Card.Title title={item.RoomType} />
+                      <Card.Content>
+                        <Paragraph>Price : PKR {item.Price}</Paragraph>
+                        <Paragraph>Total Rooms : {item.TotalRooms}</Paragraph>
+                        {route.params.Hostel?.Status !== 'Pending' && (
+                          <View>
+                            <Paragraph>Total Bed : {item.TotalBeds}</Paragraph>
+                            {item.BookedBeds == null ? (
+                              <Paragraph>Booked Bed : 0</Paragraph>
+                            ) : (
+                              <Paragraph>
+                                Booked Bed : {item.BookedBeds}
+                              </Paragraph>
+                            )}
+                            {getAvailableRooms(
+                              item.TotalBeds,
+                              item.BookedBeds,
+                            ) < 1 ? (
+                              <Paragraph style={{color: 'red'}}>
+                                Avaiable Bed :{' '}
+                                {getAvailableRooms(
+                                  item.TotalBeds,
+                                  item.BookedBeds,
+                                )}
+                              </Paragraph>
+                            ) : (
+                              <Paragraph style={{color: 'green'}}>
+                                Avaiable Bed :{' '}
+                                {getAvailableRooms(
+                                  item.TotalBeds,
+                                  item.BookedBeds,
+                                )}
+                              </Paragraph>
+                            )}
+                          </View>
+                        )}
+
+                        <Paragraph>Facilites : {item.Facilites}</Paragraph>
+                        <Paragraph>Description : {item.Description}</Paragraph>
+                      </Card.Content>
+                    </Card>
+                  );
+                })
+              )}
+              <ItemDevider />
+              <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
+                Location :
+              </Text>
+              <View
+                style={{
+                  backgroundColor: 'red',
+                  height: 300,
+
+                  backgroundColor: 'pink',
+                  marginVertical: 10,
+                  marginHorizontal: 10,
+                  borderRadius: 15,
+                  overflow: 'hidden',
+                }}>
+                <MapView
+                  style={{
+                    flex: 1,
+                  }}
+                  initialRegion={{
+                    latitude:
+                      route.params?.Hostel.Latitude === null ||
+                      route.params?.Hostel.Latitude === ''
+                        ? 30.005495277822757
+                        : route.params?.Hostel.Latitude,
+                    longitude:
+                      route.params?.Hostel.Longitude === null ||
+                      route.params?.Hostel.Longitude === ''
+                        ? 69.41553150890356
+                        : route.params?.Hostel.Longitude,
+
+                    // latitudeDelta: 2.819748261678967,
+                    // longitudeDelta: 3.680000826716423,
+                    latitudeDelta: 0.078,
+                    longitudeDelta: 0.23,
+                  }}
+                  onRegionChangeComplete={region => console.log(region)}
+                  scrollEnabled={true}
+                  zoomEnabled={false}
+                  zoomControlEnabled={true}
+                  showsUserLocation={false}
+                  showsMyLocationButton={false}>
+                  <Marker
+                    coordinate={{
+                      latitude:
+                        route.params?.Hostel.Latitude === null ||
+                        route.params?.Hostel.Latitude === ''
+                          ? 30.005495277822757
+                          : route.params?.Hostel.Latitude,
+                      longitude:
+                        route.params?.Hostel.Longitude === null ||
+                        route.params?.Hostel.Longitude === ''
+                          ? 69.41553150890356
+                          : route.params?.Hostel.Longitude,
+                    }}></Marker>
+                </MapView>
               </View>
-            )}
-          {/* Showing Book Room Button to User */}
-          {global.user.length > 0 && global.user[0].AccountType === 'User' && (
-            <View style={{flexDirection: 'row', marginBottom: 10}}>
-              <CustomButton
-                title="Feedback"
-                onPress={() =>
-                  navigation.navigate('Feedback', {
-                    H_Id: route.params.Hostel.Id,
-                  })
-                }
-                style={{flex: 1, margin: 7}}
-              />
-              <CustomButton
-                title="Book Room"
-                onPress={() =>
-                  navigation.navigate('BookRoom', {Rooms: route.params.Rooms})
-                }
-                style={{flex: 1, margin: 7}}
-              />
-            </View>
+
+              {/* Showing Accept and Reject Button to Admin to Check and Verify Hostel */}
+              {global.user.length > 0 &&
+                global.user[0].AccountType === 'Admin' &&
+                prevRoute.name === 'VerifyHostels' && (
+                  <View style={{flexDirection: 'row', marginBottom: 10}}>
+                    <CustomButton
+                      title="Reject"
+                      onPress={() => handleReject(route.params.Hostel.Id)}
+                      style={{flex: 1, margin: 7}}
+                    />
+                    <CustomButton
+                      title="Accept"
+                      onPress={() => handleAccept(route.params.Hostel.Id)}
+                      style={{flex: 1, margin: 7, backgroundColor: 'green'}}
+                    />
+                  </View>
+                )}
+              {/* Showing Book Room Button to User */}
+              {global.user.length > 0 && global.user[0].AccountType === 'User' && (
+                <View style={{flexDirection: 'row', marginBottom: 10}}>
+                  <CustomButton
+                    title="View Feedback"
+                    onPress={() =>
+                      navigation.navigate('Feedback', {
+                        H_Id: route.params.Hostel.Id,
+                        AddFeedback: false,
+                      })
+                    }
+                    style={{flex: 1, margin: 7}}
+                  />
+                  <CustomButton
+                    title="Book Room"
+                    onPress={() =>
+                      navigation.navigate('BookRoom', {
+                        Rooms: route.params.Rooms,
+                      })
+                    }
+                    style={{flex: 1, margin: 7}}
+                  />
+                </View>
+              )}
+            </ScrollView>
           )}
-        </ScrollView>
-      )}
+
       {/* <Image source={route.params.image} style={styles.image} />
       <Text
         style={{

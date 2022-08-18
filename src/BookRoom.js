@@ -28,6 +28,7 @@ import {COLOR} from './CONSTANTS/Colors';
 import {fonts} from './CONSTANTS/fonts';
 import Input from './reuseable/Input';
 import CustomButton from './reuseable/CustomButton';
+import CustomHeader from './reuseable/CustomHeader';
 
 import {api} from './CONSTANTS/api';
 import axios from 'axios';
@@ -44,13 +45,34 @@ const BookRoom = ({navigation, route}) => {
   const [checkOutDate, setCheckOutDate] = useState(new Date());
   const [showBookingDatePicker, setShowBookingDatePicker] = useState(false);
   const [showCheckoutDatePicker, setShowCheckoutDatePicker] = useState(false);
+  const [AvailableBeds, setAvailableBeds] = useState(0);
   useEffect(() => {
     if (route.params) {
       setRoomsList(route.params.Rooms);
     }
   }, []);
+
+  const handleRadioButton = item => {
+    const filter = roomsList
+      ?.filter(f => f.RoomType == item.RoomType)
+      .map(element => {
+        let totalBeds = element.TotalBeds === null ? 0 : element.TotalBeds;
+        let bookedBeds = element.BookedBeds === null ? 0 : element.BookedBeds;
+        return {
+          AvailableBeds: totalBeds - bookedBeds,
+        };
+      });
+    setAvailableBeds(filter[0].AvailableBeds);
+    setRoomType(item.RoomType);
+    setRoomCount(0);
+  };
+
   const handleIncrement = () => {
-    setRoomCount(roomCount + 1);
+    if (AvailableBeds > roomCount) {
+      setRoomCount(roomCount + 1);
+    } else {
+      alert('Sorry! No More Beds Avaiable.');
+    }
   };
   const handleDecrement = () => {
     if (roomCount > 1) setRoomCount(roomCount - 1);
@@ -63,12 +85,13 @@ const BookRoom = ({navigation, route}) => {
       alert('Please enter number of rooms');
     } else {
       const params = {
-        User_Id: global.user_id,
-        H_Id: route.params.Rooms[0].H_Id,
+        User_Id: global.user_id, //user id
+        H_Id: route.params.Rooms[0].H_Id, // hostel id
+        R_Id: route.params.Rooms[0].Id, // room id
         BookingDate: bookingDate,
-        CheckoutDate: checkOutDate,
+        // CheckoutDate: checkOutDate,
         RoomType: roomType,
-        NoOfRooms: roomCount,
+        NoOfBeds: roomCount,
         Status: 'Pending',
       };
       axios
@@ -81,27 +104,18 @@ const BookRoom = ({navigation, route}) => {
         .catch(err => console.log(err));
     }
   };
+
+  const getAvailableRooms = (totalRooms, bookedRooms) => {
+    let tRooms = totalRooms === null ? 0 : totalRooms;
+    let bRooms = bookedRooms === null ? 0 : bookedRooms;
+    return tRooms - bRooms;
+  };
   return (
     <ImageBackground
       source={bg}
       style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: SCREEN_WIDTH * 0.15,
-            marginBottom: 30,
-          }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontFamily: fonts.medium,
-              color: COLOR.txtColor,
-            }}>
-            Book Room
-          </Text>
-        </View>
+        <CustomHeader text={'Book Room'} navi={navigation} />
         <View style={{flex: 1}}>
           <View style={{...styles.rowView}}>
             <Text
@@ -125,7 +139,7 @@ const BookRoom = ({navigation, route}) => {
               />
             </View>
           </View>
-          <View style={{...styles.rowView}}>
+          {/* <View style={{...styles.rowView}}>
             <Text
               style={{
                 flex: 1,
@@ -147,7 +161,7 @@ const BookRoom = ({navigation, route}) => {
                 }
               />
             </View>
-          </View>
+          </View> */}
           {showBookingDatePicker === true && (
             <DateTimePicker
               testID="booking"
@@ -177,25 +191,38 @@ const BookRoom = ({navigation, route}) => {
 
           <Text style={styles.facilitesHeading}>Room Type</Text>
           <View style={styles.facilitesContainer}>
-            <View style={styles.rowView}>
-              {roomsList.map((item, key) => {
-                return (
-                  <View style={styles.rowView} key={key}>
-                    <RadioButton
-                      value={item.RoomType}
-                      color={COLOR.secondary}
-                      status={
-                        roomType === item.RoomType ? 'checked' : 'unchecked'
-                      }
-                      onPress={() => setRoomType(item.RoomType)}
-                    />
-                    <Text style={styles.radioButtonText}>{item.RoomType}</Text>
-                  </View>
-                );
-              })}
-            </View>
+            {roomsList.map((item, key) => {
+              return (
+                <View
+                  key={key}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    // width: '50%',
+                  }}>
+                  <RadioButton
+                    value={item.RoomType}
+                    color={COLOR.secondary}
+                    status={
+                      roomType === item.RoomType ? 'checked' : 'unchecked'
+                    }
+                    onPress={() => handleRadioButton(item)}
+                  />
+                  <Text style={styles.radioButtonText}>{item.RoomType}</Text>
+                </View>
+              );
+            })}
           </View>
-
+          {roomType.length !== 0 &&
+            (AvailableBeds < 1 ? (
+              <Text style={{...styles.radioButtonText, color: 'red'}}>
+                {AvailableBeds} beds available
+              </Text>
+            ) : (
+              <Text style={{...styles.radioButtonText, color: 'green'}}>
+                {AvailableBeds} beds available
+              </Text>
+            ))}
           <View style={{...styles.rowView, marginVertical: 10}}>
             <Text
               style={{
@@ -205,11 +232,11 @@ const BookRoom = ({navigation, route}) => {
                 color: '#303030',
                 marginLeft: 3,
               }}>
-              No. of Rooms
+              No. of Beds
             </Text>
             <Icon
               name={'md-remove-circle-sharp'}
-              color={'#000'}
+              color={COLOR.secondary}
               size={40}
               onPress={() => handleDecrement()}
             />
@@ -228,20 +255,50 @@ const BookRoom = ({navigation, route}) => {
             />
             <Icon
               name={'add-circle-sharp'}
-              color={'#000'}
+              color={COLOR.secondary}
               size={40}
               onPress={() => handleIncrement()}
             />
           </View>
         </View>
-        <Text style={styles.facilitesHeading}>Detail :</Text>
+        <Text style={styles.facilitesHeading}>Room Types :</Text>
         {roomsList.map((item, key) => {
           return (
-            <Card key={key} style={{marginBottom: 5}}>
+            <Card
+              key={key}
+              style={{
+                marginBottom: 10,
+                elevation: 2,
+                borderWidth: 1,
+                borderColor: COLOR.secondary,
+              }}>
+              <Card.Title title={item.RoomType} />
               <Card.Content>
-                <Title>Type {item.RoomType}</Title>
-                <Paragraph>Description : {item.Description}</Paragraph>
                 <Paragraph>Price : PKR {item.Price}</Paragraph>
+                <Paragraph>Total Rooms : {item.TotalRooms}</Paragraph>
+                {/* <Paragraph>
+                      No of Bed in one Room : {item.BedsInRoom}
+                    </Paragraph> */}
+                <Paragraph>Total Bed : {item.TotalBeds}</Paragraph>
+                {item.BookedBeds == null ? (
+                  <Paragraph>Booked Bed : 0</Paragraph>
+                ) : (
+                  <Paragraph>Booked Bed : {item.BookedBeds}</Paragraph>
+                )}
+                {getAvailableRooms(item.TotalBeds, item.BookedBeds) < 1 ? (
+                  <Paragraph style={{color: 'red'}}>
+                    Avaiable Bed :{' '}
+                    {getAvailableRooms(item.TotalBeds, item.BookedBeds)}
+                  </Paragraph>
+                ) : (
+                  <Paragraph style={{color: 'green'}}>
+                    Avaiable Bed :{' '}
+                    {getAvailableRooms(item.TotalBeds, item.BookedBeds)}
+                  </Paragraph>
+                )}
+
+                <Paragraph>Facilites : {item.Facilites}</Paragraph>
+                <Paragraph>Description : {item.Description}</Paragraph>
               </Card.Content>
             </Card>
           );
@@ -275,13 +332,17 @@ const styles = StyleSheet.create({
     color: '#303030',
   },
   facilitesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     backgroundColor: '#FFF',
     marginBottom: 10,
     borderColor: '#E5E0EB',
     borderWidth: 1,
     borderRadius: 2,
     padding: 5,
+    paddingHorizontal: 10,
     marginTop: 4,
+    justifyContent: 'space-between',
   },
   radioButtonText: {
     fontSize: 16,

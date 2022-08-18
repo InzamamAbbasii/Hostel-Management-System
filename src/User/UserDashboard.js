@@ -33,7 +33,7 @@ const UserDashboard = ({navigation}) => {
       />
       <CustomButton
         title="My Hostels"
-        onPress={() => navigation.navigate('SuperAdmin_ViewHostels')}
+        onPress={() => navigation.navigate('MyHostels')}
       />
       <CustomButton
         title="Logout"

@@ -1,3 +1,4 @@
+import {useLinkProps} from '@react-navigation/native';
 import React, {useState, useEffect} from 'react';
 import {View, Text, TextInput} from 'react-native';
 import {COLOR} from '../CONSTANTS/Colors';
@@ -12,6 +13,7 @@ const Input = ({
   txtStyle,
   multiline,
   value,
+  numberOfLines,
 }) => {
   // const [value, setValue] = useState('');
 
@@ -42,7 +44,6 @@ const Input = ({
         }}>
         <TextInput
           style={{
-            ...txtStyle,
             padding: 5,
             textAlignVertical: 'center',
             flex: 1,
@@ -50,8 +51,11 @@ const Input = ({
             marginTop: 5,
             color: 'black',
             marginLeft: 5,
+
+            ...txtStyle,
             // height: 38,
           }}
+          numberOfLines={numberOfLines}
           value={value}
           placeholder={title}
           placeholderColor="#ABA7AF"

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -10,21 +10,99 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import {RadioButton} from 'react-native-paper';
+import {RadioButton, Checkbox} from 'react-native-paper';
 import {bg} from '../CONSTANTS/images';
 import {COLOR} from '../CONSTANTS/Colors';
 import {fonts} from '../CONSTANTS/fonts';
 import Input from '../reuseable/Input';
 import CustomButton from '../reuseable/CustomButton';
+import CustomHeader from '../reuseable/CustomHeader';
+
 import {api} from '../CONSTANTS/api';
 import axios from 'axios';
+import Geocoder from 'react-native-geocoder';
+
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
 const AddRooms = ({navigation, route}) => {
   const [roomType, setRoomType] = useState('');
-  const [description, setDescription] = useState('');
+  const [totalRooms, setTotalRooms] = useState('');
   const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
+  const [Room_Types_List, setRoom_Types_List] = useState([
+    {
+      Id: 0,
+      Type: 'Single Bed',
+      Status: 'unchecked',
+    },
+    {
+      Id: 1,
+      Type: 'Double Bed',
+      Status: 'unchecked',
+    },
+    {
+      Id: 2,
+      Type: 'Three Bed',
+      Status: 'unchecked',
+    },
+  ]);
+
+  const [facilitesList, setFacilitesList] = useState([
+    {
+      Id: 0,
+      Name: 'Wifi',
+      Status: 'unchecked',
+    },
+    {
+      Id: 1,
+      Name: 'Study Room',
+      Status: 'unchecked',
+    },
+    {
+      Id: 2,
+      Name: 'AC',
+      Status: 'unchecked',
+    },
+    {
+      Id: 3,
+      Name: 'Laundary',
+      Status: 'unchecked',
+    },
+    {
+      Id: 4,
+      Name: 'Mess',
+      Status: 'unchecked',
+    },
+  ]);
+
+  const handleOnRadioButtonChange = id => {
+    const newData = Room_Types_List.map(item => {
+      if (item.Id === id) {
+        setRoomType(item.Type);
+        return {
+          ...item,
+          Status: 'checked',
+        };
+      } else {
+        return {...item, Status: 'unchecked'};
+      }
+    });
+    setRoom_Types_List(newData);
+  };
+  const handleOnCheckboxChange = id => {
+    const newData = facilitesList.map(item => {
+      if (item.Id === id) {
+        return {
+          ...item,
+          Status: item.Status === 'checked' ? 'unchecked' : 'checked',
+        };
+      } else {
+        return {...item};
+      }
+    });
+    setFacilitesList(newData);
+  };
   const showAlert = () => {
     Alert.alert('Room Added', 'Do you want to add more?', [
       {
@@ -38,22 +116,32 @@ const AddRooms = ({navigation, route}) => {
           setRoomType('');
           setDescription('');
           setPrice('');
+          setTotalRooms('');
+          let resetList = facilitesList.map(
+            item => item.Status === 'unchecked',
+          );
+          setFacilitesList(resetList);
         },
       },
     ]);
   };
 
   const handleSubmit = () => {
-    if (roomType === '' || description === '' || price === '') {
+    if (roomType === '' || totalRooms === '' || price === '') {
       alert('Please fill Required fields');
     } else {
+      const facilites = facilitesList
+        .filter(item => item.Status === 'checked')
+        .map(item => item.Name);
       const params = {
         RoomType: roomType,
-        Description: description,
         Price: price,
+        TotalRooms: totalRooms,
+        Description: description,
+        Facilites: facilites.toString(),
         H_Id: route.params.Id,
       };
-      console.log(params);
+      console.log('add room params', params);
       axios
         .post(api.addRoom, params)
         .then(response => {
@@ -70,73 +158,82 @@ const AddRooms = ({navigation, route}) => {
       source={bg}
       style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: SCREEN_WIDTH * 0.15,
-            marginBottom: 30,
-          }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontFamily: fonts.medium,
-              color: COLOR.txtColor,
-            }}>
-            Add Rooms
-          </Text>
-        </View>
+        <CustomHeader text={'Add Rooms'} navi={navigation} />
         <View style={{flex: 1}}>
           <Text style={styles.facilitesHeading}>Room Type</Text>
-          <View style={styles.facilitesContainer}>
-            <View style={styles.rowView}>
-              <View style={styles.rowView}>
-                <RadioButton
-                  value="A"
-                  color={COLOR.secondary}
-                  status={roomType === 'A' ? 'checked' : 'unchecked'}
-                  onPress={() => setRoomType('A')}
-                />
-                <Text style={styles.radioButtonText}>A</Text>
-              </View>
-              <View style={styles.rowView}>
-                <RadioButton
-                  value="B"
-                  color={COLOR.secondary}
-                  status={roomType === 'B' ? 'checked' : 'unchecked'}
-                  onPress={() => setRoomType('B')}
-                />
-                <Text style={styles.radioButtonText}>B</Text>
-              </View>
-              <View style={styles.rowView}>
-                <RadioButton
-                  value="C"
-                  color={COLOR.secondary}
-                  status={roomType === 'C' ? 'checked' : 'unchecked'}
-                  onPress={() => setRoomType('C')}
-                />
-                <Text style={styles.radioButtonText}>C</Text>
-              </View>
-            </View>
+          <View style={styles.roomTypesContainer}>
+            {Room_Types_List.map((item, key) => {
+              return (
+                <View
+                  key={key}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    width: '50%',
+                  }}>
+                  <RadioButton
+                    value={item.Type}
+                    color={COLOR.secondary}
+                    status={item.Status}
+                    onPress={() => handleOnRadioButtonChange(item.Id)}
+                  />
+                  <Text style={styles.radioButtonText}>{item.Type}</Text>
+                </View>
+              );
+            })}
           </View>
           <Input
-            heading={'Description '}
-            multiline={true}
-            title="Ac,Wifi,Attach Washroom ..."
-            value={description.toString()}
-            onChange={txt => setDescription(txt)}
+            heading={'Rooms'}
+            title="Total No.of rooms"
+            keyboardType={'number-pad'}
+            value={totalRooms.toString()}
+            onChange={txt => setTotalRooms(txt)}
           />
           <Input
             heading={'Price'}
             title="Price in PKR"
             value={price.toString()}
+            keyboardType={'number-pad'}
             onChange={txt => setPrice(txt)}
+          />
+
+          <Text style={styles.facilitesHeading}>Facilites</Text>
+          <View style={styles.roomTypesContainer}>
+            {facilitesList.map((item, key) => {
+              return (
+                <View
+                  key={key}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    width: '50%',
+                  }}>
+                  <Checkbox
+                    value={item.Name}
+                    color={COLOR.secondary}
+                    status={item.Status}
+                    onPress={() => handleOnCheckboxChange(item.Id)}
+                  />
+                  <Text style={styles.radioButtonText}>{item.Name}</Text>
+                </View>
+              );
+            })}
+          </View>
+
+          <Input
+            heading={'Description '}
+            multiline={true}
+            numberOfLines={8}
+            txtStyle={{textAlignVertical: 'top'}}
+            title="Description (optional)"
+            value={description.toString()}
+            onChange={txt => setDescription(txt)}
           />
         </View>
         <CustomButton
           title="Save"
           onPress={() => handleSubmit()}
-          style={{marginTop: 40}}
+          style={{marginBottom: 20}}
         />
       </ScrollView>
     </ImageBackground>
@@ -160,6 +257,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: fonts.regular,
     color: '#303030',
+  },
+  roomTypesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    backgroundColor: '#FFF',
+    marginBottom: 10,
+    borderColor: '#E5E0EB',
+    borderWidth: 1,
+    borderRadius: 2,
+    padding: 5,
+    marginTop: 4,
   },
   facilitesContainer: {
     backgroundColor: '#FFF',

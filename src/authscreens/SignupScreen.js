@@ -23,18 +23,20 @@ const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
 const SignupScreen = ({navigation}) => {
-  const [index, setIndex] = useState(0);
-  const [selectedAccount, setSelectedAccount] = useState('');
-
+  // const [index, setIndex] = useState(0); //  0 to choose account type i.e, User or Hostel Manager
+  const [index, setIndex] = useState(1); //  1 is for directorly open user registration form
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
   const [cnic, setCnic] = useState('');
   const [phoneno, setPhoneno] = useState('');
   const [occupation, setOccupation] = useState('');
+  const [institudename, setInstitudename] = useState('');
+  const [regno, setRegno] = useState('');
   const [password, setPassword] = useState('');
   const [confirmpassword, setConfirmpassword] = useState('');
-  const [accounttype, setAccounttype] = useState('');
+  // const [accounttype, setAccounttype] = useState(''); // choose by user
+  const [accounttype, setAccounttype] = useState('User'); //to open user registration from
 
   const checkValidation = () => {
     if (
@@ -43,6 +45,8 @@ const SignupScreen = ({navigation}) => {
       email.length === 0 ||
       cnic.length === 0 ||
       phoneno.length === 0 ||
+      institudename.length === 0 ||
+      regno.length === 0 ||
       password.length === 0 ||
       confirmpassword.length === 0
     ) {
@@ -67,6 +71,8 @@ const SignupScreen = ({navigation}) => {
         Email: email,
         CNIC: cnic,
         PhoneNo: phoneno,
+        InstitudeName: institudename,
+        Reg_No: regno,
         Password: password,
         AccountType: accounttype,
       };
@@ -78,6 +84,7 @@ const SignupScreen = ({navigation}) => {
             //   ? navigation.navigate('HomeScreen')
             //   : navigation.navigate('Dashboard');
             alert('Register Successfully.');
+            navigation.replace('LoginScreen');
           })
           .catch(err => alert(err));
     }
@@ -162,6 +169,7 @@ const SignupScreen = ({navigation}) => {
             <Input
               heading={'Email'}
               title="Email"
+              keyboardType={'email-address'}
               onChange={txt => setEmail(txt)}
             />
             <Input
@@ -172,15 +180,29 @@ const SignupScreen = ({navigation}) => {
             <Input
               heading={'Phone Number'}
               title="Phone Number"
+              keyboardType={'phone-pad'}
               onChange={txt => setPhoneno(txt)}
             />
 
             {accounttype === 'User' && (
-              <Input
-                heading={'Occupation'}
-                title="Occupation"
-                onChange={txt => setOccupation(txt)}
-              />
+              <View>
+                <Input
+                  heading={'Institude Name'}
+                  title="Institude Name"
+                  value={institudename}
+                  onChange={txt => setInstitudename(txt)}
+                />
+                <Input
+                  heading={'Registration No'}
+                  title="2022-Arid-2190"
+                  onChange={txt => setRegno(txt)}
+                />
+                <Input
+                  heading={'Occupation'}
+                  title="Occupation"
+                  onChange={txt => setOccupation(txt)}
+                />
+              </View>
             )}
             <Input
               heading={'Password'}

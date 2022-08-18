@@ -62,11 +62,19 @@ const PendingHostels = ({navigation}) => {
                     Rooms: item.item.RoomsList,
                   })
                 }>
-                <Card.Cover
-                  source={{
-                    uri: `${api.image}${item.item.Hostel.Image}`,
-                  }}
-                />
+                {item.item.Hostel.Image === null ? (
+                  <Card.Cover
+                    source={{
+                      uri: `${api.image}${'noimage.png'}`,
+                    }}
+                  />
+                ) : (
+                  <Card.Cover
+                    source={{
+                      uri: `${api.image}${item.item.Hostel.Image}`,
+                    }}
+                  />
+                )}
 
                 <Card.Content>
                   {/* <Title>Rs 11,000</Title> */}

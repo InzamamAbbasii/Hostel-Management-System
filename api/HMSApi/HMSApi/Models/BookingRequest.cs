@@ -20,7 +20,8 @@ namespace HMSApi.Models
         public Nullable<System.DateTime> BookingDate { get; set; }
         public Nullable<System.DateTime> CheckoutDate { get; set; }
         public string RoomType { get; set; }
-        public Nullable<int> NoOfRooms { get; set; }
+        public Nullable<int> NoOfBeds { get; set; }
         public string Status { get; set; }
+        public Nullable<int> R_Id { get; set; }
     }
 }
