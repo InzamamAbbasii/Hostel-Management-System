@@ -24,6 +24,14 @@
     <Property Name="Rating" Type="float" />
     <Property Name="Description" Type="nvarchar" MaxLength="150" />
   </EntityType>
+  <EntityType Name="Hostel_Images">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Image" Type="nvarchar" MaxLength="500" />
+    <Property Name="H_Id" Type="int" />
+  </EntityType>
   <EntityType Name="Hostel_Rooms">
     <Key>
       <PropertyRef Name="Id" />
@@ -45,6 +53,7 @@
     <Property Name="HostelName" Type="nvarchar" MaxLength="50" />
     <Property Name="PhoneNo" Type="nvarchar" MaxLength="14" />
     <Property Name="Floor" Type="nvarchar" MaxLength="50" />
+    <Property Name="Facilites" Type="nvarchar" MaxLength="500" />
     <Property Name="City" Type="nvarchar" MaxLength="50" />
     <Property Name="Address" Type="nvarchar" MaxLength="100" />
     <Property Name="Image" Type="nvarchar" MaxLength="250" />
@@ -73,6 +82,7 @@
   <EntityContainer Name="ModelStoreContainer">
     <EntitySet Name="BookingRequest" EntityType="Self.BookingRequest" Schema="dbo" store:Type="Tables" />
     <EntitySet Name="FeedBack" EntityType="Self.FeedBack" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="Hostel_Images" EntityType="Self.Hostel_Images" Schema="dbo" store:Type="Tables" />
     <EntitySet Name="Hostel_Rooms" EntityType="Self.Hostel_Rooms" Schema="dbo" store:Type="Tables" />
     <EntitySet Name="Hostels" EntityType="Self.Hostels" Schema="dbo" store:Type="Tables" />
     <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />

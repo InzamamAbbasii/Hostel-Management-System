@@ -193,6 +193,9 @@
     <Compile Include="Models\Hostel.cs">
       <DependentUpon>HMSModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Hostel_Images.cs">
+      <DependentUpon>HMSModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\Hostel_Rooms.cs">
       <DependentUpon>HMSModel.tt</DependentUpon>
     </Compile>

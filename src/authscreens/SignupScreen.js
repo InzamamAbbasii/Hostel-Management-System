@@ -18,7 +18,7 @@ import Input from '../reuseable/Input';
 import {bg, logo2} from '../CONSTANTS/images';
 import axios from 'axios';
 import {api} from '../CONSTANTS/api';
-
+import Loading from '../reuseable/Loading';
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
@@ -37,7 +37,7 @@ const SignupScreen = ({navigation}) => {
   const [confirmpassword, setConfirmpassword] = useState('');
   // const [accounttype, setAccounttype] = useState(''); // choose by user
   const [accounttype, setAccounttype] = useState('User'); //to open user registration from
-
+  const [loading, setLoading] = useState(false);
   const checkValidation = () => {
     if (
       firstname.length == 0 ||
@@ -65,6 +65,7 @@ const SignupScreen = ({navigation}) => {
 
   const handleSignup = () => {
     if (checkValidation()) {
+      setLoading(true);
       const params = {
         FirstName: firstname,
         LastName: lastname,
@@ -86,13 +87,15 @@ const SignupScreen = ({navigation}) => {
             alert('Register Successfully.');
             navigation.replace('LoginScreen');
           })
-          .catch(err => alert(err));
+          .catch(err => alert(err))
+          .finally(() => setLoading(true));
     }
   };
   return (
     <ImageBackground
       source={bg}
       style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
+      {loading && <Loading />}
       <View
         style={{
           flexDirection: 'row',

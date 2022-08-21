@@ -21,7 +21,7 @@ import CustomHeader from '../reuseable/CustomHeader';
 import {api} from '../CONSTANTS/api';
 import axios from 'axios';
 import Geocoder from 'react-native-geocoder';
-
+import Loading from '../reuseable/Loading';
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
@@ -30,6 +30,7 @@ const AddRooms = ({navigation, route}) => {
   const [totalRooms, setTotalRooms] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
   const [Room_Types_List, setRoom_Types_List] = useState([
     {
       Id: 0,
@@ -55,23 +56,13 @@ const AddRooms = ({navigation, route}) => {
       Status: 'unchecked',
     },
     {
-      Id: 1,
-      Name: 'Study Room',
-      Status: 'unchecked',
-    },
-    {
       Id: 2,
       Name: 'AC',
       Status: 'unchecked',
     },
     {
       Id: 3,
-      Name: 'Laundary',
-      Status: 'unchecked',
-    },
-    {
-      Id: 4,
-      Name: 'Mess',
+      Name: 'TV',
       Status: 'unchecked',
     },
   ]);
@@ -117,10 +108,10 @@ const AddRooms = ({navigation, route}) => {
           setDescription('');
           setPrice('');
           setTotalRooms('');
-          let resetList = facilitesList.map(
-            item => item.Status === 'unchecked',
-          );
-          setFacilitesList(resetList);
+          // let resetList = facilitesList.map(
+          //   item => item.Status === 'unchecked',
+          // );
+          // setFacilitesList(resetList);
         },
       },
     ]);
@@ -130,6 +121,7 @@ const AddRooms = ({navigation, route}) => {
     if (roomType === '' || totalRooms === '' || price === '') {
       alert('Please fill Required fields');
     } else {
+      setLoading(true);
       const facilites = facilitesList
         .filter(item => item.Status === 'checked')
         .map(item => item.Name);
@@ -149,17 +141,17 @@ const AddRooms = ({navigation, route}) => {
         })
         .catch(err => {
           alert(err);
-        });
+        })
+        .finally(() => setLoading(false));
     }
   };
 
   return (
-    <ImageBackground
-      source={bg}
-      style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
+    <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <CustomHeader text={'Add Rooms'} navi={navigation} />
-        <View style={{flex: 1}}>
+        {loading && <Loading />}
+        <View style={{flex: 1, paddingHorizontal: 16}}>
           <Text style={styles.facilitesHeading}>Room Type</Text>
           <View style={styles.roomTypesContainer}>
             {Room_Types_List.map((item, key) => {
@@ -233,7 +225,7 @@ const AddRooms = ({navigation, route}) => {
         <CustomButton
           title="Save"
           onPress={() => handleSubmit()}
-          style={{marginBottom: 20}}
+          style={{marginBottom: 20, width: '90%'}}
         />
       </ScrollView>
     </ImageBackground>

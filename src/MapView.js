@@ -8,6 +8,7 @@ import {
   Searchbar,
 } from 'react-native-paper';
 import {View, ScrollView, FlatList, Text, RefreshControl} from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapView, {
   Marker,
   PROVIDER_GOOGLE,
@@ -17,8 +18,11 @@ import axios from 'axios';
 import {api} from './CONSTANTS/api';
 import {COLOR} from './CONSTANTS/Colors';
 import CustomButton from './reuseable/CustomButton';
+import CustomHeader from './reuseable/CustomHeader';
+import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
+import MenuComponent from './reuseable/MenuComponent';
 
-const MapViewScreen = ({navigation}) => {
+const MapViewScreen = ({navigation, route}) => {
   const mapViewRef = useRef(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [data, setData] = useState([]);
@@ -26,6 +30,13 @@ const MapViewScreen = ({navigation}) => {
   const [viewMode, setViewMode] = useState('Map'); //default list view
   const [coorsList, setCoorsList] = useState([]);
   const [mapRef, setmapRef] = useState(null);
+
+  const [visible, setVisible] = useState(false);
+
+  const hideMenu = () => setVisible(false);
+
+  const showMenu = () => setVisible(true);
+
   const onChangeSearch = query => setSearchQuery(query);
 
   useEffect(() => {
@@ -57,6 +68,7 @@ const MapViewScreen = ({navigation}) => {
   };
 
   const MapComponent = React.memo(() => {
+    console.log('render map');
     return (
       <MapView
         ref={mapViewRef}
@@ -64,12 +76,12 @@ const MapViewScreen = ({navigation}) => {
         style={{
           flex: 1,
         }}
-        // initialRegion={{
-        //   latitude: 30.005495277822757,
-        //   longitude: 69.41553150890356,
-        //   latitudeDelta: 0.078,
-        //   longitudeDelta: 0.23,
-        // }}
+        initialRegion={{
+          latitude: 30.005495277822757,
+          longitude: 69.41553150890356,
+          latitudeDelta: 4.95,
+          longitudeDelta: 4.95,
+        }}
         scrollEnabled={true}
         zoomEnabled={true}
         zoomControlEnabled={true}
@@ -89,19 +101,23 @@ const MapViewScreen = ({navigation}) => {
         })}
       </MapView>
     );
-  });
+  }, []);
+
   return (
-    <View style={{flex: 1}}>
+    <View style={{flex: 1, backgroundColor: '#FFFF'}}>
+      <CustomHeader text="MapView" navi={navigation} />
+      <MenuComponent navigation={navigation} route={route} />
+
       <Searchbar
         placeholder="Search"
         onChangeText={onChangeSearch}
         value={searchQuery}
       />
-      <CustomButton
+      {/* <CustomButton
         title={'Click to See ListView'}
         style={{width: '100%', marginTop: 0, borderRadius: 0}}
         onPress={() => navigation.replace('SuperAdmin_ViewHostels')}
-      />
+      /> */}
       {data.length === 0 ? (
         <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>No Record Found</Text>

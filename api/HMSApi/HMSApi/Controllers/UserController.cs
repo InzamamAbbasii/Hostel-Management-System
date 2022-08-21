@@ -115,6 +115,7 @@ namespace HMSApi.Controllers
                                                        s.RequestInfo.H_Id,
                                                        s.RequestInfo.Status,
                                                        s.HostelInfo,
+                                                       HostelImages = db.Hostel_Images.Where(w => w.H_Id == s.HostelInfo.Id).Select(ss => ss.Image),
                                                        RoomInfo = new
                                                        {
                                                            s.RequestInfo.RoomType,

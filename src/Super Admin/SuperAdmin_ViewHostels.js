@@ -15,28 +15,39 @@ import {
   Text,
   RefreshControl,
   StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
-import MapView, {
-  Marker,
-  PROVIDER_GOOGLE,
-  PROVIDER_DEFAULT,
-} from 'react-native-maps';
+import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Rating} from 'react-native-rating-element';
 import axios from 'axios';
 import {api} from '../CONSTANTS/api';
 import {COLOR} from '../CONSTANTS/Colors';
 import CustomButton from '../reuseable/CustomButton';
+import CustomHeader from '../reuseable/CustomHeader';
+import Loading from '../reuseable/Loading';
+import MenuComponent from '../reuseable/MenuComponent';
 
-const SuperAdmin_ViewHostels = ({navigation}) => {
+const SuperAdmin_ViewHostels = ({navigation, route}) => {
   const mapViewRef = useRef(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [data, setData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadinng, setLoadinng] = useState(false);
   const [viewMode, setViewMode] = useState('Map'); //default list view
   const [coorsList, setCoorsList] = useState([]);
+
+  const [visible, setVisible] = useState(false);
+
+  const hideMenu = () => setVisible(false);
+
+  const showMenu = () => setVisible(true);
+
   const onChangeSearch = query => setSearchQuery(query);
 
   useEffect(() => {
+    // console.log(route.name);
+    setLoadinng(true);
     getHostels();
   }, []);
 
@@ -45,33 +56,51 @@ const SuperAdmin_ViewHostels = ({navigation}) => {
       .get(api.get_Hostels)
       .then(res => {
         setData(res.data);
-        let coordinateList = [];
-        res.data.forEach(element => {
-          let obj = {
-            latitude: parseFloat(element.Hostel.Latitude),
-            longitude: parseFloat(element.Hostel.Longitude),
-          };
-          coordinateList.push(obj);
-        });
-        setCoorsList(coordinateList);
+        // let coordinateList = [];
+        // res.data.forEach(element => {
+        //   let obj = {
+        //     latitude: parseFloat(element.Hostel.Latitude),
+        //     longitude: parseFloat(element.Hostel.Longitude),
+        //   };
+        //   coordinateList.push(obj);
+        // });
+        // setCoorsList(coordinateList);
       })
       .catch(err => alert(err))
-      .finally(() => setRefreshing(false));
+      .finally(() => {
+        setLoadinng(false);
+        setRefreshing(false);
+      });
   };
 
   return (
     <View style={{flex: 1, backgroundColor: '#FFF'}}>
+      <CustomHeader
+        text="View Hostels"
+        navi={navigation}
+        // style={{marginHorizontal: 10}}
+      />
+
+      {global.user_id == 0 && (
+        <TouchableOpacity
+          style={styles.btnLogin}
+          onPress={() => navigation.replace('LoginScreen')}>
+          <Text style={styles.loginTxt}>Login</Text>
+        </TouchableOpacity>
+      )}
+
+      <MenuComponent navigation={navigation} route={route} />
       <Searchbar
         placeholder="Search"
         onChangeText={onChangeSearch}
         value={searchQuery}
       />
-      <CustomButton
+      {/* <CustomButton
         title={'Click to See MapView'}
         style={{width: '100%', marginTop: 0, borderRadius: 0, marginBottom: 10}}
         onPress={() => navigation.replace('MapViewScreen')}
-      />
-      {data.length === 0 ? (
+      /> */}
+      {data.length === 0 && loadinng == false ? (
         <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>No Record Found</Text>
         </View>
@@ -94,7 +123,7 @@ const SuperAdmin_ViewHostels = ({navigation}) => {
               <Card
                 mode="elevated"
                 style={{
-                  marginBottom: 7,
+                  marginTop: 7,
                   borderRadius: 8,
                   width: '95%',
                   alignSelf: 'center',
@@ -102,10 +131,25 @@ const SuperAdmin_ViewHostels = ({navigation}) => {
                 onPress={() =>
                   navigation.navigate('HostelDetail', {
                     Hostel: item.item.Hostel,
+                    HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,
                   })
                 }>
-                {item.item.Hostel.Image === null ? (
+                {item.item?.HostelImages?.length === 0 ? (
+                  <Card.Cover
+                    source={{
+                      uri: `${api.image}${'noimage.png'}`,
+                    }}
+                  />
+                ) : (
+                  <Card.Cover
+                    source={{
+                      uri: `${api.image}${item.item.HostelImages[0]}`,
+                    }}
+                  />
+                )}
+
+                {/* {item.item.Hostel.Image === null ? (
                   <Card.Cover
                     source={{
                       uri: `${api.image}${'noimage.png'}`,
@@ -117,7 +161,7 @@ const SuperAdmin_ViewHostels = ({navigation}) => {
                       uri: `${api.image}${item.item.Hostel.Image}`,
                     }}
                   />
-                )}
+                )} */}
 
                 <Card.Content>
                   {/* <Title>Rs 11,000</Title> */}
@@ -185,6 +229,7 @@ const SuperAdmin_ViewHostels = ({navigation}) => {
           }}
         />
       )}
+      {loadinng && <Loading />}
     </View>
   );
 };
@@ -204,4 +249,16 @@ const styles = StyleSheet.create({
     // height: 60,
   },
   genderText: {fontSize: 14, fontWeight: '700', color: '#FFF'},
+  btnLogin: {
+    backgroundColor: '#000',
+    height: 30,
+    width: 50,
+    position: 'absolute',
+    right: 40,
+    top: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  loginTxt: {color: '#FFF', fontSize: 14, fontWeight: '600'},
 });

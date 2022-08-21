@@ -4,6 +4,11 @@ import {COLOR} from '../CONSTANTS/Colors';
 import Input from '../reuseable/Input';
 import CustomButton from '../reuseable/CustomButton';
 const Welcome = ({navigation}) => {
+  const handleGuestLogin = () => {
+    global.user[0] = [];
+    global.user_id = 0;
+    navigation.navigate('SuperAdmin_ViewHostels');
+  };
   return (
     <View style={styles.container}>
       {/* <ImageBackground
@@ -25,6 +30,12 @@ const Welcome = ({navigation}) => {
           title={'Register'}
           titleStyle={{color: COLOR.secondary}}
           onPress={() => navigation.navigate('SignupScreen')}
+          style={{backgroundColor: COLOR.white}}
+        />
+        <CustomButton
+          title={'Browse Hostel as Guest'}
+          titleStyle={{color: COLOR.secondary}}
+          onPress={() => handleGuestLogin()}
           style={{backgroundColor: COLOR.white}}
         />
       </View>

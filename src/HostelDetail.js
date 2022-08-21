@@ -16,6 +16,8 @@ import {
   Searchbar,
 } from 'react-native-paper';
 import MapView, {Marker} from 'react-native-maps';
+import {SliderBox} from 'react-native-image-slider-box';
+
 import {fonts} from './CONSTANTS/fonts';
 import {api} from './CONSTANTS/api';
 import {COLOR} from './CONSTANTS/Colors';
@@ -25,8 +27,15 @@ import axios from 'axios';
 const HostelDetail = ({navigation, route}) => {
   const routes = navigation.getState()?.routes;
   const prevRoute = routes[routes.length - 2];
+  const [hostelImages, setHostelImages] = useState([]);
   useEffect(() => {
     console.log('prev screen', prevRoute.name, global.user[0].AccountType);
+    // console.log(route.params.HostelImages);
+    setHostelImages([]);
+    route.params?.HostelImages?.forEach(element => {
+      let imagepath = `${api.image}${element}`;
+      setHostelImages(prevstate => [...prevstate, imagepath]);
+    });
   }, []);
 
   const handleAccept = id => {
@@ -95,17 +104,17 @@ const HostelDetail = ({navigation, route}) => {
   };
   return (
     <View style={styles.container}>
-      {prevRoute.name === 'MyHostels' && global.user[0].AccountType === 'User' //on user login when user want to see his own booked hostel
+      {prevRoute.name === 'MyHostels' && global.user[0].AccountType === 'User' //on user login😃 when user want to see his own booked hostel
         ? route.params && (
             <ScrollView>
-              {route.params.Hostel.Image === null ? (
+              {hostelImages.length === 0 ? (
                 <Text style={styles.notFoundText}>No Image Added</Text>
               ) : (
-                <Image
-                  source={{
-                    uri: `${api.image}${route.params.Hostel.Image}`,
-                  }}
-                  style={styles.image}
+                <SliderBox
+                  images={hostelImages}
+                  sliderBoxHeight={250}
+                  dotColor={COLOR.secondary}
+                  inactiveDotColor="#FFF"
                 />
               )}
 
@@ -115,6 +124,14 @@ const HostelDetail = ({navigation, route}) => {
                   <Paragraph>
                     City{'         '} : {route.params.Hostel.City}
                   </Paragraph>
+                  <Paragraph>
+                    Floor{'       '} : {route.params.Hostel.Floor}
+                  </Paragraph>
+                  {route.params.Hostel.Facilites !== null && (
+                    <Paragraph>
+                      Facilites{'  '} : {route.params.Hostel.Facilites}
+                    </Paragraph>
+                  )}
                   <Paragraph>
                     Contact {'  '}: {route.params.Hostel.PhoneNo}
                   </Paragraph>
@@ -209,14 +226,14 @@ const HostelDetail = ({navigation, route}) => {
           )
         : route.params && (
             <ScrollView>
-              {route.params.Hostel.Image === null ? (
+              {hostelImages.length === 0 ? (
                 <Text style={styles.notFoundText}>No Image Added</Text>
               ) : (
-                <Image
-                  source={{
-                    uri: `${api.image}${route.params.Hostel.Image}`,
-                  }}
-                  style={styles.image}
+                <SliderBox
+                  images={hostelImages}
+                  sliderBoxHeight={250}
+                  dotColor={COLOR.secondary}
+                  inactiveDotColor="#FFF"
                 />
               )}
 
@@ -227,7 +244,15 @@ const HostelDetail = ({navigation, route}) => {
                     City{'         '} : {route.params.Hostel.City}
                   </Paragraph>
                   <Paragraph>
-                    Contact {'  '}: {route.params.Hostel.PhoneNo}
+                    Floor{'       '} : {route.params.Hostel.Floor}
+                  </Paragraph>
+                  {route.params.Hostel.Facilites !== null && (
+                    <Paragraph>
+                      Facilites{'  '} : {route.params.Hostel.Facilites}
+                    </Paragraph>
+                  )}
+                  <Paragraph>
+                    Contact {'   '}: {route.params.Hostel.PhoneNo}
                   </Paragraph>
                   <Paragraph>
                     Address{'  '} : {route.params.Hostel.Address}
@@ -236,6 +261,111 @@ const HostelDetail = ({navigation, route}) => {
               </Card>
 
               <ItemDevider />
+              {/* Only show when ADMIN 😂 is login and want to search */}
+
+              {global.user.length > 0 &&
+                global.user[0].AccountType === 'Admin' &&
+                prevRoute.name === 'Search' &&
+                route.params?.Users &&
+                (route.params?.Users?.length === 0 ? (
+                  <View>
+                    <Text
+                      style={{
+                        ...styles.text,
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                      }}>
+                      Hostelers :{' '}
+                    </Text>
+                    <Text style={styles.notFoundText}>
+                      No Person currently live in this hostel
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{backgroundColor: 'pink'}}>
+                    <Text
+                      style={{
+                        ...styles.text,
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                      }}>
+                      Hostelers :
+                    </Text>
+                    {route.params?.Users?.map((item, key) => {
+                      return (
+                        <Card
+                          style={{
+                            marginBottom: 7,
+                          }}
+                          key={key}>
+                          <Card.Content>
+                            <Title>Name : {item.Name}</Title>
+                            <Paragraph>
+                              Email{'      '} : {item.Email}
+                            </Paragraph>
+                            {item.Reg_No != null && (
+                              <Paragraph>
+                                Reg_No{'       '} : {item.Reg_No}
+                              </Paragraph>
+                            )}
+                            {item.InstitudeName != null && (
+                              <Paragraph>
+                                InstitudeName{'       '} : {item.InstitudeName}
+                              </Paragraph>
+                            )}
+                            <Paragraph>
+                              BookingDate :{' '}
+                              {item.BookingDate == null
+                                ? 'N/A'
+                                : new Date(
+                                    item.BookingDate,
+                                  ).toLocaleDateString()}
+                            </Paragraph>
+                            <Paragraph>
+                              RoomType{'       '} : {item.RoomType}
+                            </Paragraph>
+                            <Paragraph>
+                              NoOfBeds{'       '} : {item.NoOfBeds}
+                            </Paragraph>
+                          </Card.Content>
+                        </Card>
+                      );
+                    })}
+                    <ItemDevider />
+                  </View>
+                ))}
+
+              {global.user.length > 0 &&
+                global.user[0].AccountType === 'Admin' &&
+                prevRoute.name === 'Search' &&
+                route.params?.UserRooms?.length > 0 && (
+                  <View>
+                    <Text
+                      style={{
+                        ...styles.text,
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                      }}>
+                      Room Detail :{' '}
+                    </Text>
+
+                    {route.params?.UserRooms?.map((item, key) => {
+                      return (
+                        <Card style={{marginBottom: 5, elevation: 2}} key={key}>
+                          <Card.Content>
+                            <Paragraph>Type : {item.RoomType}</Paragraph>
+                            <Paragraph>Total Beds : {item.NoOfBeds}</Paragraph>
+                            <Paragraph>
+                              Booking Date :{' '}
+                              {new Date(item.BookingDate).toLocaleDateString()}
+                            </Paragraph>
+                            <Paragraph>Price : {item.Price}</Paragraph>
+                          </Card.Content>
+                        </Card>
+                      );
+                    })}
+                  </View>
+                )}
               <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
                 Rooms :{' '}
               </Text>

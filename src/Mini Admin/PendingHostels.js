@@ -59,10 +59,11 @@ const PendingHostels = ({navigation}) => {
                 onPress={() =>
                   navigation.navigate('HostelDetail', {
                     Hostel: item.item.Hostel,
+                    HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,
                   })
                 }>
-                {item.item.Hostel.Image === null ? (
+                {/* {item.item.Hostel.Image === null ? (
                   <Card.Cover
                     source={{
                       uri: `${api.image}${'noimage.png'}`,
@@ -72,6 +73,20 @@ const PendingHostels = ({navigation}) => {
                   <Card.Cover
                     source={{
                       uri: `${api.image}${item.item.Hostel.Image}`,
+                    }}
+                  />
+                )} */}
+
+                {item.item?.HostelImages?.length === 0 ? (
+                  <Card.Cover
+                    source={{
+                      uri: `${api.image}${'noimage.png'}`,
+                    }}
+                  />
+                ) : (
+                  <Card.Cover
+                    source={{
+                      uri: `${api.image}${item.item.HostelImages[0]}`,
                     }}
                   />
                 )}

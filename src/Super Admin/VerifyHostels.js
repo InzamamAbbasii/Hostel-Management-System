@@ -12,28 +12,30 @@ import axios from 'axios';
 import {api} from '../CONSTANTS/api';
 import {COLOR} from '../CONSTANTS/Colors';
 import {hostel_1} from '../CONSTANTS/images';
+import Loading from '../reuseable/Loading';
 
 const VerifyHostels = ({navigation, route}) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [data, setData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const onChangeSearch = query => setSearchQuery(query);
   useEffect(() => {
+    setLoading(true);
     getHostels();
   }, []);
 
   const getHostels = () => {
     axios
-      .get(api.get_Hostels_Request, {
-        params: {
-          id: route.params?.Id,
-        },
-      })
+      .get(api.get_Hostels_Request)
       .then(res => {
         setData(res.data);
       })
       .catch(err => alert(err))
-      .finally(() => setRefreshing(false));
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   };
 
   const handleAccept = id => {
@@ -65,7 +67,9 @@ const VerifyHostels = ({navigation, route}) => {
   };
   return (
     <View style={{flex: 1}}>
-      {data.length === 0 ? (
+      {loading && <Loading />}
+
+      {data.length === 0 && loading == false ? (
         <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>No Record Found</Text>
         </View>
@@ -89,14 +93,28 @@ const VerifyHostels = ({navigation, route}) => {
                 onPress={() =>
                   navigation.navigate('HostelDetail', {
                     Hostel: item.item.Hostel,
+                    HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,
                   })
                 }>
-                <Card.Cover
+                {/* <Card.Cover
                   source={{
                     uri: `${api.image}${item.item.Hostel.Image}`,
                   }}
-                />
+                /> */}
+                {item.item?.HostelImages?.length === 0 ? (
+                  <Card.Cover
+                    source={{
+                      uri: `${api.image}${'noimage.png'}`,
+                    }}
+                  />
+                ) : (
+                  <Card.Cover
+                    source={{
+                      uri: `${api.image}${item.item.HostelImages[0]}`,
+                    }}
+                  />
+                )}
                 <Card.Content>
                   <Title>{item.item.Hostel.HostelName} </Title>
                   <Paragraph>Phone No : {item.item.Hostel.PhoneNo}</Paragraph>

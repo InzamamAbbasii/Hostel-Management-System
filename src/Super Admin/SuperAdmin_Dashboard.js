@@ -29,12 +29,16 @@ const SuperAdmin_Dashboard = ({navigation}) => {
       </Text>
       <CustomButton
         title="Verify Hostel"
-        // onPress={() => navigation.navigate('VerifyHostels')}
-        onPress={() => navigation.navigate('HostelManagersList')}
+        onPress={() => navigation.navigate('VerifyHostels')}
+        // onPress={() => navigation.navigate('HostelManagersList')}
       />
       <CustomButton
         title="View Hostel"
         onPress={() => navigation.navigate('SuperAdmin_ViewHostels')}
+      />
+      <CustomButton
+        title="Search"
+        onPress={() => navigation.navigate('Search')}
       />
       <CustomButton
         title="Logout"

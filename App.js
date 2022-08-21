@@ -1,8 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StatusBar} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
+import {View, Text, StatusBar, Button} from 'react-native';
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
+import {COLOR} from './src/CONSTANTS/Colors';
 //authscreen
 import Welcome from './src/authscreens/Welcome';
 import LoginScreen from './src/authscreens/LoginScreen';
@@ -19,7 +20,8 @@ import MapScreen from './src/Mini Admin/MapScreen';
 import SuperAdmin_Dashboard from './src/Super Admin/SuperAdmin_Dashboard';
 import VerifyHostels from './src/Super Admin/VerifyHostels';
 import SuperAdmin_ViewHostels from './src/Super Admin/SuperAdmin_ViewHostels';
-import HostelManagersList from './src/Super Admin/HostelManagersList';
+import Search from './src/Super Admin/Search';
+
 //User
 import UserDashboard from './src/User/UserDashboard';
 import MyHostels from './src/User/MyHostels';
@@ -33,6 +35,7 @@ import MapViewScreen from './src/MapView';
 import './global.js';
 const Stack = createNativeStackNavigator();
 const App = ({navigation}) => {
+  // let navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     global.user = [];
@@ -48,8 +51,8 @@ const App = ({navigation}) => {
   return (
     <NavigationContainer>
       <StatusBar
-        backgroundColor={'transparent'}
-        barStyle={'dark-content'}
+        backgroundColor={COLOR.secondary}
+        barStyle={'light-content'}
         translucent
       />
       <Stack.Navigator
@@ -105,11 +108,12 @@ const App = ({navigation}) => {
         <Stack.Screen
           name="SuperAdmin_ViewHostels"
           component={SuperAdmin_ViewHostels}
-          options={{headerShown: true, title: 'ViewHostel'}}
+          // options={{headerShown: true, title: 'ViewHostel'}}
         />
         <Stack.Screen
-          name="HostelManagersList"
-          component={HostelManagersList}
+          name="Search"
+          component={Search}
+          options={{headerShown: true}}
         />
 
         <Stack.Screen name="Dashboard" component={Dashboard} />
@@ -119,7 +123,7 @@ const App = ({navigation}) => {
         <Stack.Screen
           name="MapViewScreen"
           component={MapViewScreen}
-          options={{headerShown: true}}
+          // options={{headerShown: true}}
         />
         <Stack.Screen
           name="ViewHostels"

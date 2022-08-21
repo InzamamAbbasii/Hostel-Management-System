@@ -20,6 +20,7 @@ export let api = {
 
   //Admin api's
   get_Hostels: BASE_URL + 'api/Admin/GetHostels',
+  get_All_Hostelers: BASE_URL + 'api/Admin/GetAllHostelers',
   get_Hostels_Request: BASE_URL + 'api/Admin/Get_NewHostels_Request',
   approve_Hostel: BASE_URL + 'api/Admin/ApproveHostel',
   reject_Hostel: BASE_URL + 'api/Admin/RejectHostel',

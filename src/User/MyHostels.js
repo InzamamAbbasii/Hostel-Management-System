@@ -45,11 +45,9 @@ const MyHostels = ({navigation}) => {
       .finally(() => setRefreshing(false));
   };
   return (
-    <ImageBackground
-      source={bg}
-      style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
+    <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <CustomHeader text={'My Hostel'} navi={navigation} />
+        <CustomHeader text={'My Hostels'} navi={navigation} />
         {data.length === 0 ? (
           <View
             style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
@@ -76,10 +74,13 @@ const MyHostels = ({navigation}) => {
                 <Card
                   mode="elevated"
                   style={{
-                    marginBottom: 7,
+                    marginTop: 7,
                     borderRadius: 8,
                     width: '95%',
                     alignSelf: 'center',
+                    elevation: 2,
+                    // borderWidth: 1,
+                    // borderColor: COLOR.secondary,
                   }}
                   onPress={() =>
                     navigation.navigate('HostelDetail', {
@@ -89,7 +90,20 @@ const MyHostels = ({navigation}) => {
                       Status: item.item.Status,
                     })
                   }>
-                  {item.item.HostelInfo.Image === null ? (
+                  {item.item?.HostelImages?.length === 0 ? (
+                    <Card.Cover
+                      source={{
+                        uri: `${api.image}${'noimage.png'}`,
+                      }}
+                    />
+                  ) : (
+                    <Card.Cover
+                      source={{
+                        uri: `${api.image}${item.item.HostelImages[0]}`,
+                      }}
+                    />
+                  )}
+                  {/* {item.item.HostelInfo.Image === null ? (
                     <Card.Cover
                       source={{
                         uri: `${api.image}${'noimage.png'}`,
@@ -101,7 +115,7 @@ const MyHostels = ({navigation}) => {
                         uri: `${api.image}${item.item.HostelInfo.Image}`,
                       }}
                     />
-                  )}
+                  )} */}
                   {item.item.Status == 'Approved' ? (
                     <View
                       style={{

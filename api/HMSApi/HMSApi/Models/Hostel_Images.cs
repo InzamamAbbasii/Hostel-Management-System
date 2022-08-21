@@ -12,20 +12,10 @@ namespace HMSApi.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class Hostel
+    public partial class Hostel_Images
     {
         public int Id { get; set; }
-        public string HostelName { get; set; }
-        public string PhoneNo { get; set; }
-        public string Floor { get; set; }
-        public string Facilites { get; set; }
-        public string City { get; set; }
-        public string Address { get; set; }
         public string Image { get; set; }
-        public Nullable<double> Latitude { get; set; }
-        public Nullable<double> Longitude { get; set; }
-        public string Status { get; set; }
-        public Nullable<int> User_Id { get; set; }
-        public string Gender { get; set; }
+        public Nullable<int> H_Id { get; set; }
     }
 }

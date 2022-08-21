@@ -10,9 +10,11 @@ import {
   ImageBackground,
   ScrollView,
   PermissionsAndroid,
+  FlatList,
 } from 'react-native';
-import {RadioButton} from 'react-native-paper';
+import {RadioButton, Checkbox} from 'react-native-paper';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import ImageCropPicker from 'react-native-image-crop-picker';
 import {bg} from '../CONSTANTS/images';
 import {COLOR} from '../CONSTANTS/Colors';
 import {fonts} from '../CONSTANTS/fonts';
@@ -22,11 +24,13 @@ import CustomHeader from '../reuseable/CustomHeader';
 import {api} from '../CONSTANTS/api';
 import axios from 'axios';
 import Geocoder from 'react-native-geocoder';
+import Loading from '../reuseable/Loading';
 
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
 const AddHostel = ({navigation, route}) => {
+  const [loading, setLoading] = useState(false);
   const [hostel, setHostel] = useState({
     name: '',
     phoneNo: '',
@@ -43,7 +47,29 @@ const AddHostel = ({navigation, route}) => {
     fileName: '',
     fileType: '',
   });
-
+  const [imagesList, setImagesList] = useState([]);
+  const [facilitesList, setFacilitesList] = useState([
+    {
+      Id: 0,
+      Name: 'Study Room',
+      Status: 'unchecked',
+    },
+    {
+      Id: 1,
+      Name: 'Laundary',
+      Status: 'unchecked',
+    },
+    {
+      Id: 2,
+      Name: 'Mess',
+      Status: 'unchecked',
+    },
+    {
+      Id: 3,
+      Name: 'Canteen',
+      Status: 'unchecked',
+    },
+  ]);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       if (typeof route.params !== 'undefined') {
@@ -62,42 +88,71 @@ const AddHostel = ({navigation, route}) => {
 
   const ImagePick = async () => {
     try {
-      //   console.log("Camera permission given");
-      let options = {
-        mediaType: 'photo',
-        maxWidth: 300,
-        maxHeight: 550,
-        quality: 1,
-      };
-      launchImageLibrary(options, response => {
-        if (response.didCancel) {
-          //   alert('User cancelled camera picker');
-          return;
-        } else if (response.errorCode == 'camera_unavailable') {
-          //   alert('Camera not available on device');
-          return;
-        } else if (response.errorCode == 'permission') {
-          // alert('Permission not satisfied');
-          return;
-        } else if (response.errorCode == 'others') {
-          //  alert(response.errorMessage);
-          return;
-        } else {
-          setImage({
-            fileURI: response.assets[0].uri,
-            fileName: response.assets[0].fileName,
-            fileType: response.assets[0].type,
-          });
-        }
-        //   this.setState({image: response.assets[0].uri});
-        //   this.updateProfile(response.assets[0].uri);
+      ImageCropPicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        mediaType: 'any',
+        multiple: true,
+      }).then(image => {
+        let list = [];
+        image.forEach(element => {
+          var filename = element.path.replace(/^.*[\\\/]/, '');
+          console.log(element.mime, filename, element.path);
+          let obj = {
+            fileURI: element.path,
+            fileName: filename,
+            fileType: element.mime,
+          };
+          list.push(obj);
+        });
+        setImagesList(list);
       });
     } catch (err) {
       console.warn(err);
     }
   };
+
+  // const ImagePick = async () => {
+  //   try {
+  //     //   console.log("Camera permission given");
+  //     let options = {
+  //       mediaType: 'photo',
+  //       maxWidth: 300,
+  //       maxHeight: 550,
+  //       quality: 1,
+
+  //     };
+  //     launchImageLibrary(options, response => {
+  //       if (response.didCancel) {
+  //         //   alert('User cancelled camera picker');
+  //         return;
+  //       } else if (response.errorCode == 'camera_unavailable') {
+  //         //   alert('Camera not available on device');
+  //         return;
+  //       } else if (response.errorCode == 'permission') {
+  //         // alert('Permission not satisfied');
+  //         return;
+  //       } else if (response.errorCode == 'others') {
+  //         //  alert(response.errorMessage);
+  //         return;
+  //       } else {
+  //         setImage({
+  //           fileURI: response.assets[0].uri,
+  //           fileName: response.assets[0].fileName,
+  //           fileType: response.assets[0].type,
+  //         });
+  //       }
+  //       //   this.setState({image: response.assets[0].uri});
+  //       //   this.updateProfile(response.assets[0].uri);
+  //     });
+  //   } catch (err) {
+  //     console.warn(err);
+  //   }
+  // };
   const handleSubmit = async () => {
     // navigation.navigate('AddRooms', {Id: 0});
+    // return;
     if (
       hostel.name === '' ||
       hostel.phoneNo === '' ||
@@ -107,10 +162,16 @@ const AddHostel = ({navigation, route}) => {
     ) {
       alert('Please fill Required fields');
     } else {
+      setLoading(true);
+      const facilites = facilitesList
+        .filter(item => item.Status === 'checked')
+        .map(item => item.Name)
+        .toString();
       const formdata = new FormData();
       formdata.append('HostelName', hostel.name);
       formdata.append('PhoneNo', hostel.phoneNo);
       formdata.append('Floor', hostel.floor);
+      formdata.append('Facilities', facilites);
       formdata.append('City', hostel.city);
       formdata.append('Address', hostel.address);
 
@@ -132,13 +193,21 @@ const AddHostel = ({navigation, route}) => {
 
       formdata.append('User_Id', global.user_id);
       formdata.append('Gender', hostel.gender);
+      // imagesList.length > 0 && formdata.append('File', imagesList);
 
-      image.fileName !== '' &&
-        formdata.append('File', {
-          uri: image.fileURI, //Your Image File Path
-          type: image.fileType,
-          name: image.fileName,
+      for (let i = 0; i < imagesList.length; i++) {
+        formdata.append(`images[${i}]`, {
+          uri: imagesList[i].fileURI,
+          name: imagesList[i].fileName,
+          type: imagesList[i].fileType,
         });
+      }
+      // image.fileName !== '' &&
+      //   formdata.append('File', {
+      //     uri: image.fileURI, //Your Image File Path
+      //     type: image.fileType,
+      //     name: image.fileName,
+      //   });
       console.log(formdata);
       axios({
         url: api.addHostel,
@@ -158,7 +227,8 @@ const AddHostel = ({navigation, route}) => {
         })
         .catch(err => {
           alert(err);
-        });
+        })
+        .finally(() => setLoading(false));
     }
   };
   const getPositionFromAddress = async () => {
@@ -172,13 +242,25 @@ const AddHostel = ({navigation, route}) => {
         .catch(err => reject(err));
     });
   };
+  const handleOnCheckboxChange = id => {
+    const newData = facilitesList.map(item => {
+      if (item.Id === id) {
+        return {
+          ...item,
+          Status: item.Status === 'checked' ? 'unchecked' : 'checked',
+        };
+      } else {
+        return {...item};
+      }
+    });
+    setFacilitesList(newData);
+  };
   return (
-    <ImageBackground
-      source={bg}
-      style={{...StyleSheet.absoluteFillObject, paddingHorizontal: 16}}>
+    <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <CustomHeader text={'Add Hostel'} navi={navigation} />
-        <View style={{flex: 1}}>
+        {loading && <Loading />}
+        <View style={{flex: 1, paddingHorizontal: 16}}>
           <Input
             heading={'Name '}
             title="Enter Hostel Name"
@@ -196,13 +278,6 @@ const AddHostel = ({navigation, route}) => {
             title="Enter Total Floor"
             onChange={txt => setHostel({...hostel, floor: txt})}
           />
-          <Input
-            heading={'City '}
-            title="Enter City"
-            value={hostel.city}
-            onChange={txt => setHostel({...hostel, city: txt})}
-          />
-
           <Text
             style={{
               marginTop: 10,
@@ -255,6 +330,36 @@ const AddHostel = ({navigation, route}) => {
             </View>
           </View>
 
+          <Text style={styles.facilitesHeading}>Facilites</Text>
+          <View style={styles.facilitesContainer}>
+            {facilitesList.map((item, key) => {
+              return (
+                <View
+                  key={key}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    width: '50%',
+                  }}>
+                  <Checkbox
+                    value={item.Name}
+                    color={COLOR.secondary}
+                    status={item.Status}
+                    onPress={() => handleOnCheckboxChange(item.Id)}
+                  />
+                  <Text style={styles.radioButtonText}>{item.Name}</Text>
+                </View>
+              );
+            })}
+          </View>
+
+          <Input
+            heading={'City '}
+            title="Enter City"
+            value={hostel.city}
+            onChange={txt => setHostel({...hostel, city: txt})}
+          />
+
           {/* <Input
             heading={'Latitude'}
             title="Enter Latitude or choose from Google Map "
@@ -276,14 +381,14 @@ const AddHostel = ({navigation, route}) => {
           />
           <CustomButton
             title="Open Map"
+            onPress={() => navigation.navigate('MapScreen')}
             titleStyle={{color: COLOR.secondary}}
             style={{
-              backgroundColor: COLOR.white,
-              borderColor: '#E5E0EB',
               borderWidth: 1,
-              width: 100,
+              borderColor: COLOR.secondary,
+              backgroundColor: '#FFFF',
+              width: 130,
             }}
-            onPress={() => navigation.navigate('MapScreen')}
           />
           {/* <Text style={styles.facilitesHeading}>Facilites</Text>
           <View style={styles.facilitesContainer}>
@@ -312,7 +417,39 @@ const AddHostel = ({navigation, route}) => {
               </View>
             </View>
           </View> */}
-          <TouchableOpacity
+          <CustomButton
+            title="Choose Image"
+            onPress={() => ImagePick()}
+            titleStyle={{color: COLOR.secondary}}
+            style={{
+              borderWidth: 1,
+              borderColor: COLOR.secondary,
+              backgroundColor: '#FFFF',
+              width: 130,
+            }}
+          />
+          <FlatList
+            data={imagesList}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal
+            renderItem={item => {
+              return (
+                <Image
+                  source={{uri: item.item.fileURI}}
+                  // resizeMode={'contain'}
+                  style={{
+                    ...styles.imageView,
+                    width: SCREEN_WIDTH - 100,
+                    height: 250,
+                    marginHorizontal: 10,
+                    backgroundColor: COLOR.primary,
+                  }}
+                />
+              );
+            }}
+          />
+
+          {/* <TouchableOpacity
             style={styles.imageView}
             onPress={() => ImagePick()}>
             {image.fileURI === '' ? (
@@ -325,13 +462,13 @@ const AddHostel = ({navigation, route}) => {
                 resizeMode={'cover'}
               />
             )}
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <CustomButton
           title="Add Rooms"
           // onPress={() => getPositionFromAddress()}
           onPress={() => handleSubmit()}
-          style={{marginBottom: 20}}
+          style={{marginBottom: 20, width: '87%'}}
         />
       </ScrollView>
     </ImageBackground>
@@ -358,12 +495,21 @@ const styles = StyleSheet.create({
     color: '#303030',
   },
   facilitesContainer: {
+    // backgroundColor: '#FFF',
+    // marginBottom: 10,
+    // borderColor: '#E5E0EB',
+    // borderWidth: 1,
+    // borderRadius: 2,
+    // padding: 5,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     backgroundColor: '#FFF',
     marginBottom: 10,
     borderColor: '#E5E0EB',
     borderWidth: 1,
     borderRadius: 2,
     padding: 5,
+    marginTop: 4,
   },
   radioButtonText: {
     fontSize: 16,

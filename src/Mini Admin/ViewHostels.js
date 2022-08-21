@@ -26,14 +26,17 @@ import axios from 'axios';
 import {api} from '../CONSTANTS/api';
 import {COLOR} from '../CONSTANTS/Colors';
 import CustomButton from '../reuseable/CustomButton';
+import Loading from '../reuseable/Loading';
 
 const ViewHostels = ({navigation}) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [data, setData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const onChangeSearch = query => setSearchQuery(query);
 
   useEffect(() => {
+    setLoading(true);
     getHostels();
   }, []);
   const getHostels = () => {
@@ -47,11 +50,16 @@ const ViewHostels = ({navigation}) => {
         setData(res.data);
       })
       .catch(err => alert(err))
-      .finally(() => setRefreshing(false));
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   };
   return (
     <View style={{flex: 1}}>
-      {data.length === 0 ? (
+      {loading && <Loading />}
+
+      {data.length === 0 && loading == false ? (
         <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>No Record Found</Text>
         </View>
@@ -81,10 +89,11 @@ const ViewHostels = ({navigation}) => {
                 onPress={() =>
                   navigation.navigate('HostelDetail', {
                     Hostel: item.item.Hostel,
+                    HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,
                   })
                 }>
-                {item.item.Hostel.Image === null ? (
+                {item.item?.HostelImages?.length === 0 ? (
                   <Card.Cover
                     source={{
                       uri: `${api.image}${'noimage.png'}`,
@@ -93,7 +102,7 @@ const ViewHostels = ({navigation}) => {
                 ) : (
                   <Card.Cover
                     source={{
-                      uri: `${api.image}${item.item.Hostel.Image}`,
+                      uri: `${api.image}${item.item.HostelImages[0]}`,
                     }}
                   />
                 )}

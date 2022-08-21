@@ -28,6 +28,7 @@ namespace HMSApi.Controllers
             }
         }
 
+
         [HttpPost]
         public HttpResponseMessage AddHostel()
         {
@@ -36,6 +37,7 @@ namespace HMSApi.Controllers
                 var HostelName = HttpContext.Current.Request.Form["HostelName"];
                 var PhoneNo = HttpContext.Current.Request.Form["PhoneNo"];
                 var Floor = HttpContext.Current.Request.Form["Floor"];
+                var Facilities = HttpContext.Current.Request.Form["Facilities"];
                 var City = HttpContext.Current.Request.Form["City"];
                 var Address = HttpContext.Current.Request.Form["Address"];
                // var ImageName = HttpContext.Current.Request.Form["Image"];
@@ -48,6 +50,7 @@ namespace HMSApi.Controllers
                 hostel.HostelName = HostelName;
                 hostel.PhoneNo = PhoneNo;
                 hostel.Floor = Floor;
+                hostel.Facilites = Facilities;
                 hostel.City = City;
                 hostel.Address = Address;
                 hostel.Gender = Gender;
@@ -61,13 +64,13 @@ namespace HMSApi.Controllers
                 {
                 hostel.User_Id = int.Parse(User_Id);
                 }
-              
 
+                List<dynamic> imagesNameList = new List<dynamic>();
                 //Getting image detail i.e ContentType ,ContentLength,FileName etc.
                 var file = HttpContext.Current.Request.Files.Count > 0 ? HttpContext.Current.Request.Files[0] : null;
                     if (file != null && file.ContentLength > 0)
                     {
-                        BinaryReader br = new BinaryReader(file.InputStream);
+/*                        BinaryReader br = new BinaryReader(file.InputStream);
                         //Convetring image into binary
                         var Image = Convert.ToBase64String(br.ReadBytes(file.ContentLength));
                         var ImageType = file.ContentType;
@@ -80,9 +83,37 @@ namespace HMSApi.Controllers
                         //String filePath i.e E:\React Native Workspace\UploadImage\UploadImage\uploads\pakistan.jpg
                         var imagePath = Path.Combine(HttpContext.Current.Server.MapPath("~/Images"), imageName);
                         file.SaveAs(imagePath);
-                        hostel.Image = imageName;
+                        hostel.Image = imageName;*/
+                   
+                    for (int i = 0; i < HttpContext.Current.Request.Files.Count; i++)
+                    {
+                        BinaryReader br = new BinaryReader(HttpContext.Current.Request.Files[i].InputStream);
+                        //Convetring image into binary
+                        var Image = Convert.ToBase64String(br.ReadBytes(HttpContext.Current.Request.Files[i].ContentLength));
+                        var ImageType = HttpContext.Current.Request.Files[i].ContentType;
+                        //Upload image in server folder
+
+                        //storing fileName i.e pakistan.jpg
+                        // var imageName = Path.GetFileName(file.FileName); //gettting orignal file name
+                        var imageName = string.Format(@"{0}{1}", Guid.NewGuid(), Path.GetExtension(HttpContext.Current.Request.Files[i].FileName));//getting unique filename
+
+                        //String filePath i.e E:\React Native Workspace\UploadImage\UploadImage\uploads\pakistan.jpg
+                        var imagePath = Path.Combine(HttpContext.Current.Server.MapPath("~/Images"), imageName);
+                        HttpContext.Current.Request.Files[i].SaveAs(imagePath);
+                        //hostel.Image = imageName;
+                        imagesNameList.Add(imageName);
                     }
+
+                }
                 var insertedRecord = db.Hostels.Add(hostel);
+                db.SaveChanges();
+                foreach (var item in imagesNameList)
+                {
+                    Hostel_Images himages = new Hostel_Images();
+                    himages.Image = item;
+                    himages.H_Id = insertedRecord.Id;
+                    db.Hostel_Images.Add(himages);
+                }
                 db.SaveChanges();
                 return Request.CreateResponse(HttpStatusCode.OK, new
                 {
@@ -181,6 +212,7 @@ namespace HMSApi.Controllers
                                                   s.HostelName,
                                                   s.PhoneNo,
                                                   s.Floor,
+                                                  s.Facilites,
                                                   s.City,
                                                   s.Address,
                                                   s.Image,
@@ -194,6 +226,7 @@ namespace HMSApi.Controllers
                                                   TotalRooms = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Sum(sm => sm.TotalRooms),//total rooms in hostel
                                                   TotalBookedRooms = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
                                               },
+                                              HostelImages = db.Hostel_Images.Where(w => w.H_Id == s.Id).Select(ss => ss.Image),
                                               RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.Id)
                                                                          .Select(room => new
                                                                          {
@@ -244,6 +277,7 @@ namespace HMSApi.Controllers
                                                   s.HostelName,
                                                   s.PhoneNo,
                                                   s.Floor,
+                                                  s.Facilites,
                                                   s.City,
                                                   s.Address,
                                                   s.Image,
@@ -257,6 +291,7 @@ namespace HMSApi.Controllers
                                                   TotalRooms = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Sum(sm => sm.TotalRooms),//total rooms in hostel
                                                     TotalBookedRooms = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
                                                 },
+                                              HostelImages = db.Hostel_Images.Where(w => w.H_Id == s.Id).Select(ss => ss.Image),
                                               RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.Id)
                                                                          .Select(room => new
                                                                          {

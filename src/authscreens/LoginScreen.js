@@ -17,7 +17,7 @@ import CustomButton from '../reuseable/CustomButton';
 import Input from '../reuseable/Input';
 import {api} from '../CONSTANTS/api';
 import axios from 'axios';
-
+import Loading from '../reuseable/Loading';
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
@@ -25,11 +25,13 @@ const LoginScreen = ({navigation}) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = () => {
     if (email.length == 0 || password.length === 0) {
       alert('Please enter your credientals to Login.');
     } else {
+      setLoading(true);
       axios
         .get(api.login, {
           params: {
@@ -51,7 +53,8 @@ const LoginScreen = ({navigation}) => {
             }
           }
         })
-        .catch(err => alert(err));
+        .catch(err => alert(err))
+        .finally(() => setLoading(false));
     }
   };
   return (
@@ -116,6 +119,7 @@ const LoginScreen = ({navigation}) => {
             Don't have an account? Signup
           </Text>
         </TouchableOpacity>
+        {loading && <Loading />}
       </ScrollView>
     </ImageBackground>
   );
