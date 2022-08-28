@@ -131,6 +131,8 @@ const AddRooms = ({navigation, route}) => {
         TotalRooms: totalRooms,
         Description: description,
         Facilites: facilites.toString(),
+        BedsInRoom:
+          roomType === 'Single Bed' ? 1 : roomType == 'Double Bed' ? 2 : 3,
         H_Id: route.params.Id,
       };
       console.log('add room params', params);

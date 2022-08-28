@@ -1,7 +1,17 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, ImageBackground, StyleSheet, Image} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
-const SplashScreen = () => {
+const SplashScreen = ({navigation}) => {
+  // let navigation = useNavigation();
+  useEffect(() => {
+    setTimeout(() => {
+      global.user[0] = [];
+      global.user_id = 0;
+      navigation.navigate('SuperAdmin_ViewHostels');
+    }, 3000);
+  }, []);
+
   return (
     <View style={styles.container}>
       {/* <ImageBackground

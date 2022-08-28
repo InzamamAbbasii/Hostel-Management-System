@@ -40,13 +40,7 @@ const App = ({navigation}) => {
   useEffect(() => {
     global.user = [];
     global.user_id = 0;
-    setTimeout(() => {
-      setLoading(false);
-    }, 5000);
   }, []);
-  if (loading) {
-    return <SplashScreen />;
-  }
 
   return (
     <NavigationContainer>
@@ -60,6 +54,11 @@ const App = ({navigation}) => {
         // initialRouteName={'MapScreen'}
       >
         <Stack.Screen
+          name="SplashScreen"
+          component={SplashScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
           name="Welcome"
           component={Welcome}
           options={{headerShown: false}}
@@ -67,11 +66,6 @@ const App = ({navigation}) => {
         <Stack.Screen
           name="LoginScreen"
           component={LoginScreen}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="SplashScreen"
-          component={SplashScreen}
           options={{headerShown: false}}
         />
         <Stack.Screen
