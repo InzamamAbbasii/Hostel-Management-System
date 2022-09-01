@@ -172,6 +172,9 @@
     <Compile Include="Models\BookingRequest.cs">
       <DependentUpon>HMSModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\FavoriteHostel.cs">
+      <DependentUpon>HMSModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\FeedBack.cs">
       <DependentUpon>HMSModel.tt</DependentUpon>
     </Compile>

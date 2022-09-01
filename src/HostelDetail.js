@@ -15,9 +15,10 @@ import {
   Paragraph,
   Searchbar,
 } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, {Marker} from 'react-native-maps';
 import {SliderBox} from 'react-native-image-slider-box';
-
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import {fonts} from './CONSTANTS/fonts';
 import {api} from './CONSTANTS/api';
 import {COLOR} from './CONSTANTS/Colors';
@@ -28,14 +29,29 @@ const HostelDetail = ({navigation, route}) => {
   const routes = navigation.getState()?.routes;
   const prevRoute = routes[routes.length - 2];
   const [hostelImages, setHostelImages] = useState([]);
+
+  const [userid, setUserid] = useState(0);
+  const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
   useEffect(() => {
-    console.log('prev screen', prevRoute.name, global.user[0].AccountType);
-    // console.log(route.params.HostelImages);
+    const getUser = async () => {
+      let id = await AsyncStorage.getItem('user_id');
+      let user = await AsyncStorage.getItem('user');
+
+      if (id !== null) setUserid(id);
+      if (user !== null) {
+        let parse = JSON.parse(user);
+        setUserRole(parse.AccountType);
+      }
+    };
+    getUser();
     setHostelImages([]);
     route.params?.HostelImages?.forEach(element => {
       let imagepath = `${api.image}${element}`;
       setHostelImages(prevstate => [...prevstate, imagepath]);
     });
+    route.params?.isFavorite && setIsFavorite(route.params.isFavorite);
   }, []);
 
   const handleAccept = id => {
@@ -102,9 +118,42 @@ const HostelDetail = ({navigation, route}) => {
       })
       .catch(err => alert(err));
   };
+
+  const handleFavorite = () => {
+    console.log({userid}, route.params?.Hostel?.Id);
+    if (isFavorite === true) removeFavorite();
+    else addFavorite();
+  };
+
+  const addFavorite = () => {
+    const params = {
+      User_Id: userid,
+      H_Id: route.params?.Hostel?.Id,
+    };
+    axios
+      .post(api.add_Favorite, params)
+      .then(response => {
+        setIsFavorite(true);
+      })
+      .catch(err => {
+        alert(err);
+      });
+  };
+
+  const removeFavorite = () => {
+    axios
+      .get(api.remove_Favorite, {
+        params: {
+          userid: userid,
+          hostelid: route.params?.Hostel?.Id,
+        },
+      })
+      .then(res => setIsFavorite(false))
+      .catch(err => alert(err));
+  };
   return (
     <View style={styles.container}>
-      {prevRoute.name === 'MyHostels' && global.user[0].AccountType === 'User' //on user login😃 when user want to see his own booked hostel
+      {prevRoute.name === 'MyHostels' && userRole === 'User' //on user login😃 when user want to see his own booked hostel
         ? route.params && (
             <ScrollView>
               {hostelImages.length === 0 ? (
@@ -120,7 +169,31 @@ const HostelDetail = ({navigation, route}) => {
 
               <Card style={{marginBottom: 7}}>
                 <Card.Content>
-                  <Title>Name : {route.params.Hostel.HostelName}</Title>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      // justifyContent: 'space-between',
+                    }}>
+                    <Title style={{flex: 1}}>
+                      Name : {route.params.Hostel.HostelName}
+                    </Title>
+                    {isFavorite ? (
+                      <AntDesign
+                        name="heart"
+                        size={24}
+                        color={'red'}
+                        onPress={() => handleFavorite()}
+                      />
+                    ) : (
+                      <AntDesign
+                        name="hearto"
+                        size={24}
+                        color={'red'}
+                        onPress={() => handleFavorite()}
+                      />
+                    )}
+                  </View>
                   <Paragraph>
                     City{'         '} : {route.params.Hostel.City}
                   </Paragraph>
@@ -143,21 +216,27 @@ const HostelDetail = ({navigation, route}) => {
               <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
                 Room Detail :{' '}
               </Text>
-              <Card style={{marginBottom: 5, elevation: 2}}>
-                <Card.Content>
-                  <Paragraph>Type : {route.params?.Rooms?.RoomType}</Paragraph>
-                  <Paragraph>
-                    Total Beds : {route.params?.Rooms?.NoOfBeds}
-                  </Paragraph>
-                  <Paragraph>
-                    Booking Date :{' '}
-                    {new Date(
-                      route.params?.Rooms?.BookingDate,
-                    ).toLocaleDateString()}
-                  </Paragraph>
-                  <Paragraph>Price : {route.params?.Rooms?.Price}</Paragraph>
-                </Card.Content>
-              </Card>
+              {route.params.Rooms.length === 0 ? (
+                <View>
+                  <Text style={styles.notFoundText}>No Room Added</Text>
+                </View>
+              ) : (
+                route.params.Rooms.map((item, key) => {
+                  return (
+                    <Card key={key} style={{marginBottom: 5, elevation: 2}}>
+                      <Card.Content>
+                        <Paragraph>Type : {item.RoomType}</Paragraph>
+                        <Paragraph>Total Beds : {item.NoOfBeds}</Paragraph>
+                        <Paragraph>
+                          Booking Date :{' '}
+                          {new Date(item.BookingDate).toLocaleDateString()}
+                        </Paragraph>
+                        <Paragraph>Price : {item.Price}</Paragraph>
+                      </Card.Content>
+                    </Card>
+                  );
+                })
+              )}
 
               <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
                 Location :
@@ -239,7 +318,32 @@ const HostelDetail = ({navigation, route}) => {
 
               <Card style={{marginBottom: 7}}>
                 <Card.Content>
-                  <Title>Name : {route.params.Hostel.HostelName}</Title>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}>
+                    <Title style={{flex: 1}}>
+                      Name : {route.params.Hostel.HostelName}
+                    </Title>
+
+                    {userRole == 'User' &&
+                      (isFavorite ? (
+                        <AntDesign
+                          name="heart"
+                          size={24}
+                          color={'red'}
+                          onPress={() => handleFavorite()}
+                        />
+                      ) : (
+                        <AntDesign
+                          name="hearto"
+                          size={24}
+                          color={'red'}
+                          onPress={() => handleFavorite()}
+                        />
+                      ))}
+                  </View>
                   <Paragraph>
                     City{'         '} : {route.params.Hostel.City}
                   </Paragraph>
@@ -263,8 +367,7 @@ const HostelDetail = ({navigation, route}) => {
               <ItemDevider />
               {/* Only show when ADMIN 😂 is login and want to search */}
 
-              {global.user.length > 0 &&
-                global.user[0].AccountType === 'Admin' &&
+              {userRole === 'Admin' &&
                 prevRoute.name === 'Search' &&
                 route.params?.Users &&
                 (route.params?.Users?.length === 0 ? (
@@ -335,8 +438,7 @@ const HostelDetail = ({navigation, route}) => {
                   </View>
                 ))}
 
-              {global.user.length > 0 &&
-                global.user[0].AccountType === 'Admin' &&
+              {userRole === 'Admin' &&
                 prevRoute.name === 'Search' &&
                 route.params?.UserRooms?.length > 0 && (
                   <View>
@@ -366,13 +468,14 @@ const HostelDetail = ({navigation, route}) => {
                     })}
                   </View>
                 )}
+
               <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
                 Rooms :{' '}
               </Text>
               {route.params.Rooms.length === 0 ? (
                 <View>
                   <Text style={styles.notFoundText}>No Room Added</Text>
-                  {global.user[0].AccountType === 'Hostel Manager' && (
+                  {userRole === 'Hostel Manager' && (
                     <CustomButton
                       title="Add Room"
                       onPress={() =>
@@ -433,6 +536,7 @@ const HostelDetail = ({navigation, route}) => {
                 })
               )}
               <ItemDevider />
+
               <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
                 Location :
               </Text>
@@ -491,24 +595,22 @@ const HostelDetail = ({navigation, route}) => {
               </View>
 
               {/* Showing Accept and Reject Button to Admin to Check and Verify Hostel */}
-              {global.user.length > 0 &&
-                global.user[0].AccountType === 'Admin' &&
-                prevRoute.name === 'VerifyHostels' && (
-                  <View style={{flexDirection: 'row', marginBottom: 10}}>
-                    <CustomButton
-                      title="Reject"
-                      onPress={() => handleReject(route.params.Hostel.Id)}
-                      style={{flex: 1, margin: 7}}
-                    />
-                    <CustomButton
-                      title="Accept"
-                      onPress={() => handleAccept(route.params.Hostel.Id)}
-                      style={{flex: 1, margin: 7, backgroundColor: 'green'}}
-                    />
-                  </View>
-                )}
+              {userRole === 'Admin' && prevRoute.name === 'VerifyHostels' && (
+                <View style={{flexDirection: 'row', marginBottom: 10}}>
+                  <CustomButton
+                    title="Reject"
+                    onPress={() => handleReject(route.params.Hostel.Id)}
+                    style={{flex: 1, margin: 7}}
+                  />
+                  <CustomButton
+                    title="Accept"
+                    onPress={() => handleAccept(route.params.Hostel.Id)}
+                    style={{flex: 1, margin: 7, backgroundColor: 'green'}}
+                  />
+                </View>
+              )}
               {/* Showing Book Room Button to User */}
-              {global.user.length > 0 && global.user[0].AccountType === 'User' && (
+              {userRole === 'User' && (
                 <View style={{flexDirection: 'row', marginBottom: 10}}>
                   <CustomButton
                     title="View Feedback"
@@ -533,32 +635,6 @@ const HostelDetail = ({navigation, route}) => {
               )}
             </ScrollView>
           )}
-
-      {/* <Image source={route.params.image} style={styles.image} />
-      <Text
-        style={{
-          fontSize: 18,
-          marginLeft: 10,
-          fontWeight: '500',
-          color: '#000',
-          marginVertical: 5,
-        }}>
-        Name : {route.params.name}
-      </Text>
-      <Text style={styles.text}>Price : {route.params.price}</Text>
-      <Text style={styles.text}>Facilites : AC,Wifi,Study Room</Text>
-      <Text style={styles.text}>City : Rawalpindi</Text>
-      <Text style={styles.text}>Address : {route.params.address}</Text>
-      <TouchableOpacity
-        style={styles.btn}
-        onPress={() => navigation.navigate('BookRoom')}>
-        <Text style={styles.btnText}>Book Room</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.btn}
-        onPress={() => navigation.navigate('Feedback')}>
-        <Text style={styles.btnText}>Feedback</Text>
-      </TouchableOpacity> */}
     </View>
   );
 };

@@ -7,6 +7,7 @@
     <EntitySet Name="Hostel_Rooms" EntityType="Model.Hostel_Rooms" />
     <EntitySet Name="Hostel_Images" EntityType="Model.Hostel_Images" />
     <EntitySet Name="Hostels" EntityType="Model.Hostel" />
+    <EntitySet Name="FavoriteHostels" EntityType="Model.FavoriteHostel" />
   </EntityContainer>
   <EntityType Name="FeedBack">
     <Key>
@@ -86,5 +87,13 @@
     <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
     <Property Name="User_Id" Type="Int32" />
     <Property Name="Gender" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+  </EntityType>
+  <EntityType Name="FavoriteHostel">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="User_Id" Type="Int32" />
+    <Property Name="H_Id" Type="Int32" />
   </EntityType>
 </Schema>

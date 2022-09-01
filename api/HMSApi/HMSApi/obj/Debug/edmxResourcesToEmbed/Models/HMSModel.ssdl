@@ -14,6 +14,14 @@
     <Property Name="NoOfBeds" Type="int" />
     <Property Name="Status" Type="nvarchar" MaxLength="50" />
   </EntityType>
+  <EntityType Name="FavoriteHostels">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="User_Id" Type="int" />
+    <Property Name="H_Id" Type="int" />
+  </EntityType>
   <EntityType Name="FeedBack">
     <Key>
       <PropertyRef Name="Id" />
@@ -81,6 +89,7 @@
   </EntityType>
   <EntityContainer Name="ModelStoreContainer">
     <EntitySet Name="BookingRequest" EntityType="Self.BookingRequest" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="FavoriteHostels" EntityType="Self.FavoriteHostels" Schema="dbo" store:Type="Tables" />
     <EntitySet Name="FeedBack" EntityType="Self.FeedBack" Schema="dbo" store:Type="Tables" />
     <EntitySet Name="Hostel_Images" EntityType="Self.Hostel_Images" Schema="dbo" store:Type="Tables" />
     <EntitySet Name="Hostel_Rooms" EntityType="Self.Hostel_Rooms" Schema="dbo" store:Type="Tables" />

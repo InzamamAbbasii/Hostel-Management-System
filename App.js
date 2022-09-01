@@ -25,6 +25,7 @@ import Search from './src/Super Admin/Search';
 //User
 import UserDashboard from './src/User/UserDashboard';
 import MyHostels from './src/User/MyHostels';
+import FavoriteHostels from './src/User/FavoriteHostels';
 
 import SplashScreen from './src/SplashScreen';
 import HomeScreen from './src/HomeScreen';
@@ -50,9 +51,18 @@ const App = ({navigation}) => {
         translucent
       />
       <Stack.Navigator
-        screenOptions={{headerShown: false}}
+        // screenOptions={{headerShown: false}}
         // initialRouteName={'MapScreen'}
-      >
+        screenOptions={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: COLOR.secondary,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}>
         <Stack.Screen
           name="SplashScreen"
           component={SplashScreen}
@@ -137,6 +147,7 @@ const App = ({navigation}) => {
 
         <Stack.Screen name="UserDashboard" component={UserDashboard} />
         <Stack.Screen name="MyHostels" component={MyHostels} />
+        <Stack.Screen name="FavoriteHostels" component={FavoriteHostels} />
       </Stack.Navigator>
     </NavigationContainer>
   );

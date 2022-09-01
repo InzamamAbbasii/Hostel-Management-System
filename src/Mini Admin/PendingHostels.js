@@ -12,6 +12,8 @@ import axios from 'axios';
 import {api} from '../CONSTANTS/api';
 import {COLOR} from '../CONSTANTS/Colors';
 import {hostel_1} from '../CONSTANTS/images';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const PendingHostels = ({navigation}) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [data, setData] = useState([]);
@@ -21,11 +23,12 @@ const PendingHostels = ({navigation}) => {
   useEffect(() => {
     getHostels();
   }, []);
-  const getHostels = () => {
+  const getHostels = async () => {
+    let id = await AsyncStorage.getItem('user_id');
     axios
       .get(api.get_Pending_Hostels, {
         params: {
-          user_id: global.user_id,
+          user_id: id,
         },
       })
       .then(res => {

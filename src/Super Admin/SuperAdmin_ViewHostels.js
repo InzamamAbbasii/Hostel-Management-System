@@ -17,6 +17,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Rating} from 'react-native-rating-element';
@@ -37,6 +38,8 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
   const [viewMode, setViewMode] = useState('Map'); //default list view
   const [coorsList, setCoorsList] = useState([]);
 
+  const [user_id, setUser_id] = useState(0);
+
   const [visible, setVisible] = useState(false);
 
   const hideMenu = () => setVisible(false);
@@ -46,25 +49,28 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
   const onChangeSearch = query => setSearchQuery(query);
 
   useEffect(() => {
-    // console.log(route.name);
+    // console.log(route);
+    const getUser = async () => {
+      let id = await AsyncStorage.getItem('user_id');
+      setUser_id(id);
+    };
+    getUser();
+
     setLoadinng(true);
     getHostels();
   }, []);
 
-  const getHostels = () => {
+  const getHostels = async () => {
+    let id = await AsyncStorage.getItem('user_id');
+    console.log({id});
     axios
-      .get(api.get_Hostels)
+      .get(api.get_Hostels, {
+        params: {
+          user_id: id === null ? 0 : id,
+        },
+      })
       .then(res => {
         setData(res.data);
-        // let coordinateList = [];
-        // res.data.forEach(element => {
-        //   let obj = {
-        //     latitude: parseFloat(element.Hostel.Latitude),
-        //     longitude: parseFloat(element.Hostel.Longitude),
-        //   };
-        //   coordinateList.push(obj);
-        // });
-        // setCoorsList(coordinateList);
       })
       .catch(err => alert(err))
       .finally(() => {
@@ -75,18 +81,23 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
 
   return (
     <View style={{flex: 1, backgroundColor: '#FFF'}}>
-      <CustomHeader
-        text="View Hostels"
-        navi={navigation}
-        // style={{marginHorizontal: 10}}
-      />
-
-      {global.user_id == 0 && (
-        <TouchableOpacity
-          style={styles.btnLogin}
-          onPress={() => navigation.replace('LoginScreen')}>
-          <Text style={styles.loginTxt}>Login</Text>
-        </TouchableOpacity>
+      {user_id === null ? (
+        <View>
+          <CustomHeader
+            text="View Hostels"
+            onBackPress={() => navigation.navigate('LoginScreen')}
+          />
+          <TouchableOpacity
+            style={styles.btnLogin}
+            onPress={() => navigation.navigate('LoginScreen')}>
+            <Text style={styles.loginTxt}>Login</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <CustomHeader
+          text="View Hostels"
+          onBackPress={() => navigation.goBack()}
+        />
       )}
 
       <MenuComponent navigation={navigation} route={route} />
@@ -133,6 +144,7 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
                     Hostel: item.item.Hostel,
                     HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,
+                    isFavorite: item.item.isFavorite,
                   })
                 }>
                 {item.item?.HostelImages?.length === 0 ? (

@@ -1,14 +1,17 @@
 import React, {useEffect} from 'react';
 import {View, Text, ImageBackground, StyleSheet, Image} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const SplashScreen = ({navigation}) => {
   // let navigation = useNavigation();
+
   useEffect(() => {
-    setTimeout(() => {
-      global.user[0] = [];
-      global.user_id = 0;
-      navigation.navigate('SuperAdmin_ViewHostels');
+    setTimeout(async () => {
+      // global.user[0] = [];
+      // global.user_id = 0;
+      await AsyncStorage.removeItem('user_id');
+      await AsyncStorage.removeItem('user');
+      navigation.replace('SuperAdmin_ViewHostels');
     }, 3000);
   }, []);
 

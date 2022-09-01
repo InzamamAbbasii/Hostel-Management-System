@@ -34,7 +34,7 @@ const SuperAdmin_Dashboard = ({navigation}) => {
       />
       <CustomButton
         title="View Hostel"
-        onPress={() => navigation.navigate('SuperAdmin_ViewHostels')}
+        onPress={() => navigation.push('SuperAdmin_ViewHostels')}
       />
       <CustomButton
         title="Search"

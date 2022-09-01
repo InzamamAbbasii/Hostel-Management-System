@@ -23,19 +23,24 @@ import {api} from '../CONSTANTS/api';
 import {COLOR} from '../CONSTANTS/Colors';
 import CustomButton from '../reuseable/CustomButton';
 import CustomHeader from '../reuseable/CustomHeader';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useIsFocused} from '@react-navigation/native';
 const MyHostels = ({navigation}) => {
   const [data, setData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
+  let isFocus = useIsFocused();
   useEffect(() => {
+    setLoading(true);
     getHostels();
-  }, []);
-  const getHostels = () => {
+  }, [isFocus]);
+
+  const getHostels = async () => {
+    let id = await AsyncStorage.getItem('user_id');
     axios
       .get(api.get_booked_hostels, {
         params: {
-          user_id: 2,
+          user_id: id,
         },
       })
       .then(res => {
@@ -44,10 +49,14 @@ const MyHostels = ({navigation}) => {
       .catch(err => alert(err))
       .finally(() => setRefreshing(false));
   };
+
   return (
     <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <CustomHeader text={'My Hostels'} navi={navigation} />
+      <View style={{flex: 1, backgroundColor: '#fff'}}>
+        <CustomHeader
+          text={'My Hostels'}
+          onBackPress={() => navigation.goBack()}
+        />
         {data.length === 0 ? (
           <View
             style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
@@ -88,6 +97,8 @@ const MyHostels = ({navigation}) => {
                       Rooms: item.item.RoomInfo,
                       Id: item.item.Id,
                       Status: item.item.Status,
+                      HostelImages: item.item.HostelImages,
+                      isFavorite: item.item.isFavorite,
                     })
                   }>
                   {item.item?.HostelImages?.length === 0 ? (
@@ -142,7 +153,7 @@ const MyHostels = ({navigation}) => {
             }}
           />
         )}
-      </ScrollView>
+      </View>
     </ImageBackground>
   );
 };

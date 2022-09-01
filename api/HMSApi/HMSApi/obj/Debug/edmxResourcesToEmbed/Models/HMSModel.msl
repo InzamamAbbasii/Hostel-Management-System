@@ -86,5 +86,14 @@
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
+    <EntitySetMapping Name="FavoriteHostels">
+      <EntityTypeMapping TypeName="Model.FavoriteHostel">
+        <MappingFragment StoreEntitySet="FavoriteHostels">
+          <ScalarProperty Name="H_Id" ColumnName="H_Id" />
+          <ScalarProperty Name="User_Id" ColumnName="User_Id" />
+          <ScalarProperty Name="Id" ColumnName="Id" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
   </EntityContainerMapping>
 </Mapping>

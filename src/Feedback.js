@@ -8,7 +8,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Rating} from 'react-native-rating-element';
 import {redStr, whiteStr, profile} from './CONSTANTS/images';
 import {COLOR} from './CONSTANTS/Colors';
@@ -61,16 +61,15 @@ const Feedback = ({navigation, route}) => {
     setStarList(newData);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    let id = await AsyncStorage.getItem('user_id');
     const rating = starList.filter(item => item.Rated);
-    console.log(rating.length, feedback);
     const params = {
-      User_Id: global.user_id,
+      User_Id: id,
       H_Id: route.params.H_Id,
       Rating: rating.length,
       Description: feedback,
     };
-    console.log(route.params);
     axios
       .post(api.addFeedback, params)
       .then(response => {

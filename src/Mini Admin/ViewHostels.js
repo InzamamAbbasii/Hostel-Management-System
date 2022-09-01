@@ -27,6 +27,7 @@ import {api} from '../CONSTANTS/api';
 import {COLOR} from '../CONSTANTS/Colors';
 import CustomButton from '../reuseable/CustomButton';
 import Loading from '../reuseable/Loading';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ViewHostels = ({navigation}) => {
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -39,11 +40,12 @@ const ViewHostels = ({navigation}) => {
     setLoading(true);
     getHostels();
   }, []);
-  const getHostels = () => {
+  const getHostels = async () => {
+    let id = await AsyncStorage.getItem('user_id');
     axios
       .get(api.get_Approved_Hostels, {
         params: {
-          user_id: global.user_id,
+          user_id: id,
         },
       })
       .then(res => {

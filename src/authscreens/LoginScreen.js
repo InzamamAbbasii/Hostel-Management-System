@@ -10,6 +10,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {COLOR} from '../CONSTANTS/Colors';
 import {fonts} from '../CONSTANTS/fonts';
 import {bg, logo2, logo1} from '../CONSTANTS/images';
@@ -27,7 +28,7 @@ const LoginScreen = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (email.length == 0 || password.length === 0) {
       alert('Please enter your credientals to Login.');
     } else {
@@ -39,11 +40,13 @@ const LoginScreen = ({navigation}) => {
             pass: password,
           },
         })
-        .then(res => {
+        .then(async res => {
           if (res.data.success === false) alert(res.data.message);
           else {
-            global.user[0] = res.data.data;
-            global.user_id = res.data.data.Id;
+            // global.user[0] = res.data.data;
+            // global.user_id = res.data.data.Id;
+            await AsyncStorage.setItem('user_id', res.data.data.Id.toString());
+            await AsyncStorage.setItem('user', JSON.stringify(res.data.data));
             if (res.data.data.AccountType === 'Hostel Manager')
               navigation.navigate('Dashboard');
             else if (res.data.data.AccountType === 'Admin') {

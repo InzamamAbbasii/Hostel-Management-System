@@ -123,6 +123,7 @@ const Search = ({navigation}) => {
       }
     } else {
       //hostel case
+
       if (searchText && searchText.length > 0) {
         console.log('if');
         let txt = searchText.toLowerCase();

@@ -25,7 +25,7 @@ import {api} from '../CONSTANTS/api';
 import axios from 'axios';
 import Geocoder from 'react-native-geocoder';
 import Loading from '../reuseable/Loading';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
@@ -190,8 +190,9 @@ const AddHostel = ({navigation, route}) => {
         formdata.append('Latitude', hostel.latittude);
         formdata.append('Longitude', hostel.longitude);
       }
-
-      formdata.append('User_Id', global.user_id);
+      let userid = await AsyncStorage.getItem('user_id');
+      // formdata.append('User_Id', global.user_id);
+      formdata.append('User_Id', userid);
       formdata.append('Gender', hostel.gender);
       // imagesList.length > 0 && formdata.append('File', imagesList);
 
@@ -258,7 +259,10 @@ const AddHostel = ({navigation, route}) => {
   return (
     <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <CustomHeader text={'Add Hostel'} navi={navigation} />
+        <CustomHeader
+          text={'Add Hostel'}
+          onBackPress={() => navigation.goBack()}
+        />
         {loading && <Loading />}
         <View style={{flex: 1, paddingHorizontal: 16}}>
           <Input

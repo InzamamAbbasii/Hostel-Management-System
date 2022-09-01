@@ -105,7 +105,7 @@ const MapViewScreen = ({navigation, route}) => {
 
   return (
     <View style={{flex: 1, backgroundColor: '#FFFF'}}>
-      <CustomHeader text="MapView" navi={navigation} />
+      <CustomHeader text="MapView" onBackPress={() => navigation.goBack()} />
       <MenuComponent navigation={navigation} route={route} />
 
       <Searchbar

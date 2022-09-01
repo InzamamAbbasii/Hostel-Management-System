@@ -10,6 +10,7 @@ import {
 import {View, ScrollView, Text, FlatList} from 'react-native';
 import axios from 'axios';
 import {api} from '../CONSTANTS/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BookingRequest = () => {
   const [data, setData] = useState([]);
@@ -17,9 +18,10 @@ const BookingRequest = () => {
     getBookingRequest();
   }, []);
 
-  const getBookingRequest = () => {
+  const getBookingRequest = async () => {
+    let id = await AsyncStorage.getItem('user_id');
     axios
-      .get(api.get_Booking_Request, {params: {user_id: global.user_id}})
+      .get(api.get_Booking_Request, {params: {user_id: id}})
       .then(response => {
         setData(response.data);
       })

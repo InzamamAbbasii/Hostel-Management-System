@@ -97,7 +97,7 @@ namespace HMSApi.Controllers
 
         [HttpGet]
         //Getting all approved hostels 
-        public HttpResponseMessage GetHostels()
+        public HttpResponseMessage GetHostels(int user_id)
         {
             try
             {
@@ -112,6 +112,7 @@ namespace HMSApi.Controllers
                                                     TotalRooms = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Sum(sm => sm.TotalRooms),//total rooms in hostel
                                                     TotalBookedRooms = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
                                                 },
+                                                isFavorite = db.FavoriteHostels.Any(a => a.User_Id == user_id && a.H_Id == s.Id),
                                                 HostelImages = db.Hostel_Images.Where(w => w.H_Id == s.Id).Select(ss => ss.Image),
                                                 RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.Id)
                                                                            .Select(room => new

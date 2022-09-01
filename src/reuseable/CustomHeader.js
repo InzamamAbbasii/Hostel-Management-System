@@ -21,9 +21,11 @@ export default class CustomHeader extends Component {
           ...this.props.style,
         }}>
         <TouchableOpacity
-          onPress={() => {
-            this.props.navi.goBack();
-          }}>
+          onPress={this.props.onBackPress}
+          // onPress={() => {
+          //   this.props.navi.goBack();
+          // }}
+        >
           <Image
             resizeMode="contain"
             source={backBtn}
@@ -37,7 +39,7 @@ export default class CustomHeader extends Component {
               fontSize: 22,
               // color: '#262626',
               color: '#FFF',
-              fontWeight: '500',
+              fontWeight: 'bold',
               fontFamily: fonts.regular,
             }}>
             {this.props.text}

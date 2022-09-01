@@ -151,7 +151,10 @@ const AddRooms = ({navigation, route}) => {
   return (
     <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <CustomHeader text={'Add Rooms'} navi={navigation} />
+        <CustomHeader
+          text={'Add Rooms'}
+          onBackPress={() => navigation.goBack()}
+        />
         {loading && <Loading />}
         <View style={{flex: 1, paddingHorizontal: 16}}>
           <Text style={styles.facilitesHeading}>Room Type</Text>

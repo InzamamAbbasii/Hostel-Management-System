@@ -32,4 +32,7 @@ export let api = {
   get_Rating_and_Reviews: BASE_URL + 'api/User/GetReviewsAndRating',
   get_booked_hostels: BASE_URL + 'api/User/MyHostels',
   checkout: BASE_URL + 'api/User/Checkout',
+  add_Favorite: BASE_URL + 'api/User/AddFavorite',
+  remove_Favorite: BASE_URL + 'api/User/RemoveFavorite',
+  get_Favorite_Hostels: BASE_URL + 'api/User/GetFavoriteHostels',
 };
