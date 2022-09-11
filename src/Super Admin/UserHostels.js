@@ -25,7 +25,7 @@ import CustomButton from '../reuseable/CustomButton';
 import CustomHeader from '../reuseable/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useIsFocused} from '@react-navigation/native';
-const MyHostels = ({navigation}) => {
+const UserHostels = ({navigation, route}) => {
   const [data, setData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,11 +36,10 @@ const MyHostels = ({navigation}) => {
   }, [isFocus]);
 
   const getHostels = async () => {
-    let id = await AsyncStorage.getItem('user_id');
     axios
       .get(api.get_User_Approved_Hostels, {
         params: {
-          user_id: id,
+          user_id: route.params.UserID,
         },
       })
       .then(res => {
@@ -54,7 +53,7 @@ const MyHostels = ({navigation}) => {
     <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <View style={{flex: 1, backgroundColor: '#fff'}}>
         <CustomHeader
-          text={'My Hostels'}
+          text={'User Hostels'}
           onBackPress={() => navigation.goBack()}
         />
         {data.length === 0 ? (
@@ -92,7 +91,7 @@ const MyHostels = ({navigation}) => {
                     // borderColor: COLOR.secondary,
                   }}
                   onPress={() =>
-                    navigation.navigate('HostelDetail_User', {
+                    navigation.navigate('UserHostelDetails', {
                       Hostel: item.item.HostelInfo,
                       Rooms: item.item.RoomInfo,
                       Id: item.item.Id,
@@ -114,6 +113,7 @@ const MyHostels = ({navigation}) => {
                       }}
                     />
                   )}
+
                   <Card.Content>
                     <Title>{item.item.HostelInfo.HostelName}</Title>
                     <Paragraph>{item.item.HostelInfo.Address}</Paragraph>
@@ -128,7 +128,7 @@ const MyHostels = ({navigation}) => {
   );
 };
 
-export default MyHostels;
+export default UserHostels;
 
 const styles = StyleSheet.create({
   genderView: {

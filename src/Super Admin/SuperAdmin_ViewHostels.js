@@ -33,6 +33,8 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
   const mapViewRef = useRef(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [data, setData] = useState([]);
+  const [dataCopy, setDataCopy] = useState([]);
+  const [searchText, setSearchText] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [loadinng, setLoadinng] = useState(false);
   const [viewMode, setViewMode] = useState('Map'); //default list view
@@ -62,7 +64,6 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
 
   const getHostels = async () => {
     let id = await AsyncStorage.getItem('user_id');
-    console.log({id});
     axios
       .get(api.get_Hostels, {
         params: {
@@ -71,12 +72,34 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
       })
       .then(res => {
         setData(res.data);
+        setDataCopy(res.data);
       })
       .catch(err => alert(err))
       .finally(() => {
         setLoadinng(false);
         setRefreshing(false);
+        setSearchText('');
       });
+  };
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      handleSearch();
+    }, 500);
+    // if this effect run again, because `value` changed, we remove the previous timeout
+    return () => clearTimeout(timeout);
+  }, [searchText]);
+
+  const handleSearch = () => {
+    if (searchText && searchText.length > 0) {
+      let txt = searchText.toLowerCase();
+      const filter = dataCopy.filter(item => {
+        return item.Hostel.HostelName.toLowerCase().match(txt);
+      });
+      setData(filter);
+    } else {
+      if (dataCopy.length > 0) setData(dataCopy);
+    }
   };
 
   return (
@@ -99,12 +122,11 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
           onBackPress={() => navigation.goBack()}
         />
       )}
-
       <MenuComponent navigation={navigation} route={route} />
       <Searchbar
         placeholder="Search"
-        onChangeText={onChangeSearch}
-        value={searchQuery}
+        onChangeText={txt => setSearchText(txt)}
+        value={searchText}
       />
       {/* <CustomButton
         title={'Click to See MapView'}
@@ -140,7 +162,7 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
                   alignSelf: 'center',
                 }}
                 onPress={() =>
-                  navigation.navigate('HostelDetail', {
+                  navigation.navigate('HostelDetail_Admin', {
                     Hostel: item.item.Hostel,
                     HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,

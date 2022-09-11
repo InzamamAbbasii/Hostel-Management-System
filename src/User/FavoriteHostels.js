@@ -97,7 +97,7 @@ const FavoriteHostels = ({navigation, route}) => {
                   alignSelf: 'center',
                 }}
                 onPress={() =>
-                  navigation.navigate('HostelDetail', {
+                  navigation.navigate('HostelDetail_User', {
                     Hostel: item.item.Hostel,
                     HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,

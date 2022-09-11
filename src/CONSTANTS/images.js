@@ -15,6 +15,12 @@ export const whiteStr = require('../../assests/images/whiteStr.png');
 
 export const Backg = require('../../assests/images/Backg.png');
 export const marker = require('../../assests/images/marker.png');
+export const marker_1 = require('../../assests/images/marker_1.png');
+export const marker_2 = require('../../assests/images/marker_2.png');
+export const marker_3 = require('../../assests/images/marker_3.png');
+export const marker_4 = require('../../assests/images/marker_4.png');
+export const marker_5 = require('../../assests/images/marker_5.png');
+export const marker_6 = require('../../assests/images/marker_6.png');
 export const profile = require('../../assests/images/profile.png');
 export const back = require('../../assests/images/Back.png');
 export const backBtn = require('../../assests/images/backBtn.png');

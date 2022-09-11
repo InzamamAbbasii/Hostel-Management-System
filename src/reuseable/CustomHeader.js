@@ -20,18 +20,20 @@ export default class CustomHeader extends Component {
           backgroundColor: COLOR.secondary,
           ...this.props.style,
         }}>
-        <TouchableOpacity
-          onPress={this.props.onBackPress}
-          // onPress={() => {
-          //   this.props.navi.goBack();
-          // }}
-        >
-          <Image
-            resizeMode="contain"
-            source={backBtn}
-            style={{height: 26, width: 26}}
-          />
-        </TouchableOpacity>
+        {this.props.showBackButton == false ? null : (
+          <TouchableOpacity
+            onPress={this.props.onBackPress}
+            // onPress={() => {
+            //   this.props.navi.goBack();
+            // }}
+          >
+            <Image
+              resizeMode="contain"
+              source={backBtn}
+              style={{height: 26, width: 26}}
+            />
+          </TouchableOpacity>
+        )}
         <View style={{flex: 1}}>
           <Text
             style={{

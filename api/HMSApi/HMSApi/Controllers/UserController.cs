@@ -196,6 +196,139 @@ namespace HMSApi.Controllers
         }
 
         [HttpGet]
+        // getting user specific hostel that he currently live
+        public HttpResponseMessage UserApprovedHostels(int user_id)
+        {
+            try
+            {
+                var requestList = db.BookingRequests.Join(db.Hostels,
+                                                     r => r.H_Id,
+                                                     h => h.Id,
+                                                     (r, h) => new { RequestInfo = r, HostelInfo = h }
+                                                   ).Where(w => w.RequestInfo.User_Id == user_id && w.RequestInfo.Status == "Approved"
+                                                   ).Select(s => new
+                                                   {
+                                                       s.RequestInfo.Id,
+                                                       //s.RequestInfo.BookingDate,
+
+                                                       s.RequestInfo.H_Id,
+                                                       s.RequestInfo.R_Id,
+                                                       s.RequestInfo.Status,
+                                                       s.RequestInfo,
+                                                       s.HostelInfo,
+                                                       HostelImages = db.Hostel_Images.Where(w => w.H_Id == s.HostelInfo.Id).Select(ss => ss.Image),
+                                                       isFavorite = db.FavoriteHostels.Any(a => a.User_Id == user_id && a.H_Id == s.HostelInfo.Id)
+                                                   });
+                var groups = requestList.GroupBy(g => g.H_Id);
+                List<dynamic> list = new List<dynamic>();
+                foreach (var group in groups)
+                {
+                    Console.WriteLine("List with ID == {0}", group.Key);
+                    List<dynamic> roomList = new List<dynamic>();
+                    foreach (var item in group)
+                    {
+                        var roominfo = db.Hostel_Rooms.FirstOrDefault(w => w.Id == item.R_Id);
+                        var roomObj = new
+                        {
+                            group.FirstOrDefault().RequestInfo.RoomType,
+                            group.FirstOrDefault().RequestInfo.NoOfBeds,
+                            group.FirstOrDefault().RequestInfo.R_Id,
+                            group.FirstOrDefault().RequestInfo.BookingDate,
+                            roominfo.Price
+                        };
+
+                        roomList.Add(roomObj);
+                    }
+                    var obj = new
+                    {
+                        group.FirstOrDefault().Id,
+                        group.FirstOrDefault().H_Id,
+                        group.FirstOrDefault().Status,
+                        group.FirstOrDefault().HostelInfo,
+                        group.FirstOrDefault().isFavorite,
+                        group.FirstOrDefault().HostelImages,
+                        RoomInfo = roomList,
+
+                    };
+                    list.Add(obj);
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, list);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+
+        [HttpGet]
+        // getting user specific hostel that he request for booking and currently its status is pending
+        public HttpResponseMessage UserPendingHostels(int user_id)
+        {
+            try
+            {
+                var requestList = db.BookingRequests.Join(db.Hostels,
+                                                     r => r.H_Id,
+                                                     h => h.Id,
+                                                     (r, h) => new { RequestInfo = r, HostelInfo = h }
+                                                   ).Where(w => w.RequestInfo.User_Id == user_id && w.RequestInfo.Status == "Pending"
+                                                   ).Select(s => new
+                                                   {
+                                                       s.RequestInfo.Id,
+                                                       //s.RequestInfo.BookingDate,
+
+                                                       s.RequestInfo.H_Id,
+                                                       s.RequestInfo.R_Id,
+                                                       s.RequestInfo.Status,
+                                                       s.RequestInfo,
+                                                       s.HostelInfo,
+                                                       HostelImages = db.Hostel_Images.Where(w => w.H_Id == s.HostelInfo.Id).Select(ss => ss.Image),
+                                                       isFavorite = db.FavoriteHostels.Any(a => a.User_Id == user_id && a.H_Id == s.HostelInfo.Id)
+                                                   });
+                var groups = requestList.GroupBy(g => g.H_Id);
+                List<dynamic> list = new List<dynamic>();
+                foreach (var group in groups)
+                {
+                    Console.WriteLine("List with ID == {0}", group.Key);
+                    List<dynamic> roomList = new List<dynamic>();
+                    foreach (var item in group)
+                    {
+                        var roominfo = db.Hostel_Rooms.FirstOrDefault(w => w.Id == item.R_Id);
+                        var roomObj = new
+                        {
+                            group.FirstOrDefault().RequestInfo.RoomType,
+                            group.FirstOrDefault().RequestInfo.NoOfBeds,
+                            group.FirstOrDefault().RequestInfo.R_Id,
+                            group.FirstOrDefault().RequestInfo.BookingDate,
+                            roominfo.Price
+                        };
+
+                        roomList.Add(roomObj);
+                    }
+                    var obj = new
+                    {
+                        group.FirstOrDefault().Id,
+                        group.FirstOrDefault().H_Id,
+                        group.FirstOrDefault().Status,
+                        group.FirstOrDefault().HostelInfo,
+                        group.FirstOrDefault().isFavorite,
+                        group.FirstOrDefault().HostelImages,
+                        RoomInfo = roomList,
+
+                    };
+                    list.Add(obj);
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, list);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet]
         public HttpResponseMessage Checkout(int requestId)
         {
             try

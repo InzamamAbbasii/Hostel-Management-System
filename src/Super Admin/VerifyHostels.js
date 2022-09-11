@@ -91,7 +91,7 @@ const VerifyHostels = ({navigation, route}) => {
               <Card
                 style={{marginBottom: 7}}
                 onPress={() =>
-                  navigation.navigate('HostelDetail', {
+                  navigation.navigate('HostelDetail_Admin', {
                     Hostel: item.item.Hostel,
                     HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,

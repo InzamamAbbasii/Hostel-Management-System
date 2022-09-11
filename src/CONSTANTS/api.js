@@ -1,4 +1,3 @@
-// const BASE_URL = 'http://192.168.1.102/HMSAPI/api/';
 const BASE_URL = 'http://192.168.1.102/HMSAPI/';
 
 export let api = {
@@ -17,6 +16,13 @@ export let api = {
   get_Booking_Request: BASE_URL + 'api/HostelManager/GetBookingRequest',
   approve_Booking: BASE_URL + 'api/HostelManager/ApproveBooking',
   reject_Booking: BASE_URL + 'api/HostelManager/RejectBooking',
+  get_room_detail: BASE_URL + 'api/HostelManager/GetRoomDetail',
+  update_room: BASE_URL + 'api/HostelManager/UpdateRoom',
+  delete_room: BASE_URL + 'api/HostelManager/DeleteRoom',
+  delete_hostel: BASE_URL + 'api/HostelManager/DeleteHostel',
+  get_Hostel_Detail: BASE_URL + 'api/HostelManager/GetHostelDetail',
+  delete_hostel_Images: BASE_URL + 'api/HostelManager/DeleteHostelImage',
+  update_hostel: BASE_URL + 'api/HostelManager/UpdateHostel',
 
   //Admin api's
   get_Hostels: BASE_URL + 'api/Admin/GetHostels',
@@ -31,6 +37,8 @@ export let api = {
   addFeedback: BASE_URL + 'api/User/SaveFeedback',
   get_Rating_and_Reviews: BASE_URL + 'api/User/GetReviewsAndRating',
   get_booked_hostels: BASE_URL + 'api/User/MyHostels',
+  get_User_Approved_Hostels: BASE_URL + 'api/User/UserApprovedHostels',
+  get_User_Pending_Hostels: BASE_URL + 'api/User/UserPendingHostels',
   checkout: BASE_URL + 'api/User/Checkout',
   add_Favorite: BASE_URL + 'api/User/AddFavorite',
   remove_Favorite: BASE_URL + 'api/User/RemoveFavorite',

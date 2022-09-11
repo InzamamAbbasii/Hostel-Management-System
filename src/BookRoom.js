@@ -8,6 +8,7 @@ import {
   Dimensions,
   ImageBackground,
   ScrollView,
+  FlatList,
   Alert,
 } from 'react-native';
 import {
@@ -33,6 +34,7 @@ import CustomHeader from './reuseable/CustomHeader';
 
 import {api} from './CONSTANTS/api';
 import axios from 'axios';
+import {style} from 'deprecated-react-native-prop-types/DeprecatedImagePropType';
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
@@ -123,13 +125,15 @@ const BookRoom = ({navigation, route}) => {
   };
   return (
     <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{flex: 1}}>
         <CustomHeader
           text={'Book Room'}
           onBackPress={() => navigation.goBack()}
         />
-        <View style={{paddingHorizontal: 16}}>
-          <View style={{flex: 1}}>
+        <View style={{paddingHorizontal: 16, flex: 1}}>
+          <View style={{}}>
             <View style={{...styles.rowView}}>
               <Text
                 style={{
@@ -204,7 +208,7 @@ const BookRoom = ({navigation, route}) => {
               />
             )}
 
-            <Text style={styles.facilitesHeading}>Room Type</Text>
+            <Text style={styles.facilitesHeading}>Select Room Type</Text>
             <View style={styles.facilitesContainer}>
               {roomsList.map((item, key) => {
                 return (
@@ -238,7 +242,12 @@ const BookRoom = ({navigation, route}) => {
                   {AvailableBeds} beds available
                 </Text>
               ))}
-            <View style={{...styles.rowView, marginVertical: 10}}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginVertical: 10,
+              }}>
               <Text
                 style={{
                   flex: 1,
@@ -276,53 +285,76 @@ const BookRoom = ({navigation, route}) => {
               />
             </View>
           </View>
-          <Text style={styles.facilitesHeading}>Room Types :</Text>
-          {roomsList.map((item, key) => {
-            return (
-              <Card
-                key={key}
-                style={{
-                  marginBottom: 10,
-                  elevation: 2,
-                  borderWidth: 1,
-                  borderColor: COLOR.secondary,
-                }}>
-                <Card.Title title={item.RoomType} />
-                <Card.Content>
-                  <Paragraph>Price : PKR {item.Price}</Paragraph>
-                  <Paragraph>Total Rooms : {item.TotalRooms}</Paragraph>
-                  {/* <Paragraph>
-                      No of Bed in one Room : {item.BedsInRoom}
-                    </Paragraph> */}
-                  <Paragraph>Total Bed : {item.TotalBeds}</Paragraph>
-                  {item.BookedBeds == null ? (
-                    <Paragraph>Booked Bed : 0</Paragraph>
-                  ) : (
-                    <Paragraph>Booked Bed : {item.BookedBeds}</Paragraph>
-                  )}
-                  {getAvailableRooms(item.TotalBeds, item.BookedBeds) < 1 ? (
-                    <Paragraph style={{color: 'red'}}>
-                      Avaiable Bed :{' '}
-                      {getAvailableRooms(item.TotalBeds, item.BookedBeds)}
-                    </Paragraph>
-                  ) : (
-                    <Paragraph style={{color: 'green'}}>
-                      Avaiable Bed :{' '}
-                      {getAvailableRooms(item.TotalBeds, item.BookedBeds)}
-                    </Paragraph>
-                  )}
+          <View>
+            <Text style={styles.facilitesHeading}>Room Types :</Text>
+            <FlatList
+              data={roomsList}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={item => {
+                return (
+                  <View style={styles.card}>
+                    <Text style={styles.card_Title}>{item.item.RoomType}</Text>
+                    <Text style={styles.card_Text}>
+                      Price : PKR {item.item.Price}
+                    </Text>
+                    <Text style={styles.card_Text}>
+                      Total Rooms : {item.item.TotalRooms}
+                    </Text>
+                    <Text style={styles.card_Text}>
+                      Total Bed : {item.item.TotalBeds}
+                    </Text>
+                    {item.item.BookedBeds == null ? (
+                      <Text style={styles.card_Text}>Booked Bed : 0</Text>
+                    ) : (
+                      <Text style={styles.card_Text}>
+                        Booked Bed : {item.item.BookedBeds}
+                      </Text>
+                    )}
+                    {getAvailableRooms(
+                      item.item.TotalBeds,
+                      item.item.BookedBeds,
+                    ) < 1 ? (
+                      <Text style={{...styles.card_Text, color: 'red'}}>
+                        Avaiable Bed :{' '}
+                        {getAvailableRooms(
+                          item.item.TotalBeds,
+                          item.item.BookedBeds,
+                        )}
+                      </Text>
+                    ) : (
+                      <Text style={{...styles.card_Text, color: 'green'}}>
+                        Avaiable Bed :{' '}
+                        {getAvailableRooms(
+                          item.item.TotalBeds,
+                          item.item.BookedBeds,
+                        )}
+                      </Text>
+                    )}
 
-                  <Paragraph>Facilites : {item.Facilites}</Paragraph>
-                  <Paragraph>Description : {item.Description}</Paragraph>
-                </Card.Content>
-              </Card>
-            );
-          })}
-          <CustomButton
-            title="Submit"
-            onPress={() => handleSubmit()}
-            style={{marginVertical: 30}}
-          />
+                    <Text style={styles.card_Text}>
+                      Facilites : {item.item.Facilites}
+                    </Text>
+                    <Text style={styles.card_Text}>
+                      Description : {item.item.Description}
+                    </Text>
+                  </View>
+                );
+              }}
+            />
+          </View>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'flex-end',
+            }}>
+            <CustomButton
+              title="Submit"
+              onPress={() => handleSubmit()}
+              style={{marginVertical: 30}}
+            />
+          </View>
         </View>
       </ScrollView>
     </ImageBackground>
@@ -376,5 +408,38 @@ const styles = StyleSheet.create({
     padding: 5,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+
+  card: {
+    marginVertical: 10,
+    elevation: 2,
+    marginRight: 15,
+    // backgroundColor: 'skyblue',
+    backgroundColor: COLOR.primary,
+    padding: 20,
+    borderRadius: 10,
+
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
+  },
+
+  card_Title: {
+    color: COLOR.halfWhite,
+    fontWeight: 'bold',
+    fontSize: 16,
+    lineHeight: 35,
+  },
+  card_Text: {
+    color: COLOR.halfWhite,
+    fontWeight: '500',
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

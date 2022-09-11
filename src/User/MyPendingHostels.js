@@ -25,7 +25,7 @@ import CustomButton from '../reuseable/CustomButton';
 import CustomHeader from '../reuseable/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useIsFocused} from '@react-navigation/native';
-const MyHostels = ({navigation}) => {
+const MyPendingHostels = ({navigation}) => {
   const [data, setData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ const MyHostels = ({navigation}) => {
   const getHostels = async () => {
     let id = await AsyncStorage.getItem('user_id');
     axios
-      .get(api.get_User_Approved_Hostels, {
+      .get(api.get_User_Pending_Hostels, {
         params: {
           user_id: id,
         },
@@ -54,7 +54,7 @@ const MyHostels = ({navigation}) => {
     <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <View style={{flex: 1, backgroundColor: '#fff'}}>
         <CustomHeader
-          text={'My Hostels'}
+          text={'Pending Hostels'}
           onBackPress={() => navigation.goBack()}
         />
         {data.length === 0 ? (
@@ -114,6 +114,23 @@ const MyHostels = ({navigation}) => {
                       }}
                     />
                   )}
+                  {/* {item.item.Status == 'Approved' ? (
+                    <View
+                      style={{
+                        ...styles.genderView,
+                        backgroundColor: 'green',
+                      }}>
+                      <Text style={styles.genderText}>{item.item.Status}</Text>
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        ...styles.genderView,
+                        backgroundColor: 'red',
+                      }}>
+                      <Text style={styles.genderText}>{item.item.Status}</Text>
+                    </View>
+                  )} */}
                   <Card.Content>
                     <Title>{item.item.HostelInfo.HostelName}</Title>
                     <Paragraph>{item.item.HostelInfo.Address}</Paragraph>
@@ -128,7 +145,7 @@ const MyHostels = ({navigation}) => {
   );
 };
 
-export default MyHostels;
+export default MyPendingHostels;
 
 const styles = StyleSheet.create({
   genderView: {

@@ -11,7 +11,8 @@ const SplashScreen = ({navigation}) => {
       // global.user_id = 0;
       await AsyncStorage.removeItem('user_id');
       await AsyncStorage.removeItem('user');
-      navigation.replace('SuperAdmin_ViewHostels');
+      // navigation.replace('SuperAdmin_ViewHostels');
+      navigation.replace('HomeScreen');
     }, 3000);
   }, []);
 

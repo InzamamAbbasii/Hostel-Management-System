@@ -28,6 +28,7 @@ import {COLOR} from '../CONSTANTS/Colors';
 import CustomButton from '../reuseable/CustomButton';
 import Loading from '../reuseable/Loading';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useIsFocused} from '@react-navigation/native';
 
 const ViewHostels = ({navigation}) => {
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -35,11 +36,11 @@ const ViewHostels = ({navigation}) => {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const onChangeSearch = query => setSearchQuery(query);
-
+  let isFocus = useIsFocused();
   useEffect(() => {
     setLoading(true);
     getHostels();
-  }, []);
+  }, [isFocus]);
   const getHostels = async () => {
     let id = await AsyncStorage.getItem('user_id');
     axios
@@ -50,6 +51,7 @@ const ViewHostels = ({navigation}) => {
       })
       .then(res => {
         setData(res.data);
+        console.log(res.data[0].HostelImages);
       })
       .catch(err => alert(err))
       .finally(() => {
@@ -89,7 +91,7 @@ const ViewHostels = ({navigation}) => {
                   alignSelf: 'center',
                 }}
                 onPress={() =>
-                  navigation.navigate('HostelDetail', {
+                  navigation.navigate('HostelDetail_HostelManager', {
                     Hostel: item.item.Hostel,
                     HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,

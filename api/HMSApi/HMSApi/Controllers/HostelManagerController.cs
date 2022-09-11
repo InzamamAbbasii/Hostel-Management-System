@@ -18,9 +18,17 @@ namespace HMSApi.Controllers
         {
             try
             {
+                var check = db.Hostel_Rooms.FirstOrDefault(f => f.RoomType == hostel_Rooms.RoomType && f.H_Id == hostel_Rooms.H_Id);
+                if (check != null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, false);
+                }
+                else
+                {
                 db.Hostel_Rooms.Add(hostel_Rooms);
                 db.SaveChanges();
-                return Request.CreateResponse(HttpStatusCode.OK);
+                return Request.CreateResponse(HttpStatusCode.OK,true);
+                }
             }
             catch (Exception ex)
             {
@@ -122,7 +130,7 @@ namespace HMSApi.Controllers
             }
             catch (Exception ex)
             {
-                return Request.CreateResponse(HttpStatusCode.InternalServerError +ex.Message);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError ,ex.Message);
             }
 
         }
@@ -391,6 +399,7 @@ namespace HMSApi.Controllers
             }
         }
 
+
         [HttpGet]
         public HttpResponseMessage RejectBooking(int id) //id=request id
         {
@@ -426,7 +435,237 @@ namespace HMSApi.Controllers
             }
         }
 
-       
+        
+        //-------------------------------------------Edit and Delete Room------------------------------------
+
+        [HttpGet]
+        public HttpResponseMessage GetRoomDetail(int room_id)
+        {
+            try
+            {
+                var data = db.Hostel_Rooms.FirstOrDefault(f => f.Id == room_id);
+                if (data == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, false);
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, data);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public HttpResponseMessage UpdateRoom(Hostel_Rooms hostel_Rooms)
+        {
+            try
+            {
+                var data = db.Hostel_Rooms.FirstOrDefault(f => f.Id == hostel_Rooms.Id);
+                if (data == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, false);
+                }
+                else
+                {
+                    data.RoomType = hostel_Rooms.RoomType;
+                    data.TotalRooms = hostel_Rooms.TotalRooms;
+                    data.Price = hostel_Rooms.Price;
+                    data.Facilites=hostel_Rooms.Facilites;
+                    data.Description = hostel_Rooms.Description;
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, "Room Updated successfully!");
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public HttpResponseMessage DeleteRoom(int room_id)
+        {
+            try
+            {
+                var data = db.Hostel_Rooms.FirstOrDefault(f => f.Id == room_id);
+                if (data == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, false);
+                }
+                else
+                {
+                    db.Hostel_Rooms.Remove(data);
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+
+        //-------------------------------------------Edit and Delete Hostel------------------------------------
+
+        [HttpGet]
+        public HttpResponseMessage GetHostelDetail(int id)
+        {
+            try
+            {
+                var data = db.Hostels.FirstOrDefault(f => f.Id == id);
+                if (data == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, false);
+                }
+                else
+                {
+                    var obj = new
+                    {
+                        HostelInfo = data,
+                        HostelImages = db.Hostel_Images.Where(w => w.H_Id == id).ToList()
+                    };
+                    return Request.CreateResponse(HttpStatusCode.OK, obj);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public HttpResponseMessage UpdateHostel()
+        {
+            try
+            {
+                var Id = HttpContext.Current.Request.Form["Id"];
+                var HostelName = HttpContext.Current.Request.Form["HostelName"];
+                var PhoneNo = HttpContext.Current.Request.Form["PhoneNo"];
+                var Floor = HttpContext.Current.Request.Form["Floor"];
+                var Facilities = HttpContext.Current.Request.Form["Facilities"];
+                var City = HttpContext.Current.Request.Form["City"];
+                var Address = HttpContext.Current.Request.Form["Address"];
+                // var ImageName = HttpContext.Current.Request.Form["Image"];
+                var Latitude = HttpContext.Current.Request.Form["Latitude"];
+                var Longitude = HttpContext.Current.Request.Form["Longitude"];
+                var User_Id = HttpContext.Current.Request.Form["User_Id"];
+                var Gender = HttpContext.Current.Request.Form["Gender"];
+
+                int hostelid = int.Parse(Id);
+                var data = db.Hostels.FirstOrDefault(f => f.Id ==hostelid);
+                if (data == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, false);
+                }
+                else
+                {
+                    data.HostelName = HostelName;
+                    data.PhoneNo = PhoneNo;
+                    data.Floor = Floor;
+                    data.Facilites = Facilities;
+                    data.City = City;
+                    data.Address = Address;
+                    data.Gender = Gender;
+                    if (Latitude != null || Longitude != null)
+                    {
+                        data.Latitude = float.Parse(Latitude);
+                        data.Longitude = float.Parse(Longitude);
+                    }
+                    //data.Status = "Pending";
+                 /*   if (User_Id != null)
+                    {
+                        data.User_Id = int.Parse(User_Id);
+                    }*/
+
+                    List<dynamic> imagesNameList = new List<dynamic>();
+                    var file = HttpContext.Current.Request.Files.Count > 0 ? HttpContext.Current.Request.Files[0] : null;
+                    if (file != null && file.ContentLength > 0)
+                    {
+                        for (int i = 0; i < HttpContext.Current.Request.Files.Count; i++)
+                        {
+                            BinaryReader br = new BinaryReader(HttpContext.Current.Request.Files[i].InputStream);
+                            //Convetring image into binary
+                            var Image = Convert.ToBase64String(br.ReadBytes(HttpContext.Current.Request.Files[i].ContentLength));
+                            var ImageType = HttpContext.Current.Request.Files[i].ContentType;
+                            var imageName = string.Format(@"{0}{1}", Guid.NewGuid(), Path.GetExtension(HttpContext.Current.Request.Files[i].FileName));//getting unique filename
+                            var imagePath = Path.Combine(HttpContext.Current.Server.MapPath("~/Images"), imageName);
+                            HttpContext.Current.Request.Files[i].SaveAs(imagePath);
+                            imagesNameList.Add(imageName);
+                        }
+                    }
+                   // var insertedRecord = db.Hostels.Add(hostel);
+                    db.SaveChanges();
+                    foreach (var item in imagesNameList)
+                    {
+                        Hostel_Images himages = new Hostel_Images();
+                        himages.Image = item;
+                        himages.H_Id = hostelid;
+                        db.Hostel_Images.Add(himages);
+                    }
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, "Hostel Updated successfully!");
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public HttpResponseMessage DeleteHostel(int id)
+        {
+            try
+            {
+                var data = db.Hostels.FirstOrDefault(f => f.Id == id);
+                if (data == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, false);
+                }
+                else
+                {
+                    db.Hostels.Remove(data);
+                    var images = db.Hostel_Images.Where(w => w.H_Id == id);
+                    db.Hostel_Images.RemoveRange(images);
+                    var rooms = db.Hostel_Rooms.Where(w => w.H_Id == id);
+                    db.Hostel_Rooms.RemoveRange(rooms);
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public HttpResponseMessage DeleteHostelImage(int id)
+        {
+            try
+            {
+                var data = db.Hostel_Images.FirstOrDefault(f => f.Id == id);
+                if (data == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, false);
+                }
+                else
+                {
+                    db.Hostel_Images.Remove(data);
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
 
     }
 }

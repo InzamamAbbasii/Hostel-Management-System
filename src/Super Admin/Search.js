@@ -26,7 +26,7 @@ import {fonts} from '../CONSTANTS/fonts';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CustomButton from '../reuseable/CustomButton';
 import Loading from '../reuseable/Loading';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Search = ({navigation}) => {
   const mapViewRef = useRef(null);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -57,9 +57,14 @@ const Search = ({navigation}) => {
     getUsers();
   }, []);
 
-  const getHostels = () => {
+  const getHostels = async () => {
+    let id = await AsyncStorage.getItem('user_id');
     axios
-      .get(api.get_Hostels)
+      .get(api.get_Hostels, {
+        params: {
+          user_id: id === null ? 0 : id,
+        },
+      })
       .then(res => {
         setDataCopy(res.data);
         setData(res.data);
@@ -101,20 +106,22 @@ const Search = ({navigation}) => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       handleSearch();
-    }, 2000);
+    }, 500);
     // if this effect run again, because `value` changed, we remove the previous timeout
     return () => clearTimeout(timeout);
   }, [searchText]);
 
   const handleSearch = () => {
-    console.log('search for', searchText);
     if (selectedFilter === 'User') {
       if (searchText && searchText.length > 0) {
         let txt = searchText.toLowerCase();
         const filter = userDataCopy.filter(item => {
+          console.log('search for', searchText);
+          console.log(item.HostelInfo[0].HostelName);
           return (
-            item.Name.toLowerCase().match(txt) ||
-            item.Reg_No.toLowerCase().match(txt)
+            item.Name.toLowerCase().match(txt) || //check username
+            item.Reg_No.toLowerCase().match(txt) || //check regno
+            item.HostelInfo[0].HostelName.toLowerCase().match(txt) //check hostelname
           );
         });
         setUserData(filter);
@@ -192,7 +199,7 @@ const Search = ({navigation}) => {
           })}
       </View>
       {selectedFilter == 'User' ? (
-        <View>
+        <View style={{flex: 1}}>
           {userData.length === 0 ? (
             <View
               style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
@@ -202,6 +209,7 @@ const Search = ({navigation}) => {
             </View>
           ) : (
             <FlatList
+              style={{flex: 1}}
               showsVerticalScrollIndicator={false}
               data={userData}
               keyExtractor={(item, index) => index.toString()}
@@ -225,14 +233,20 @@ const Search = ({navigation}) => {
                       alignSelf: 'center',
                     }}
                     onPress={() =>
-                      navigation.navigate('HostelDetail', {
-                        Hostel: item.item.HostelInfo[0],
-                        HostelImages: item.item.HostelImages,
-                        Rooms: item.item.RoomsList,
-                        // Users: [],
-                        UserRooms: item.item.Rooms,
+                      navigation.navigate('UserHostels', {
+                        UserID: item.item.UserID,
                       })
-                    }>
+                    }
+                    // onPress={() =>
+                    //   navigation.navigate('HostelDetail_Admin', {
+                    //     Hostel: item.item.HostelInfo[0],
+                    //     HostelImages: item.item.HostelImages,
+                    //     Rooms: item.item.RoomsList,
+                    //     // Users: [],
+                    //     UserRooms: item.item.Rooms,
+                    //   })
+                    // }
+                  >
                     <Card.Content>
                       <Title>User Name : {item.item.Name}</Title>
                       <Paragraph>
@@ -281,7 +295,7 @@ const Search = ({navigation}) => {
                       alignSelf: 'center',
                     }}
                     onPress={() =>
-                      navigation.navigate('HostelDetail', {
+                      navigation.navigate('HostelDetail_Admin', {
                         Hostel: item.item.Hostel,
                         HostelImages: item.item.HostelImages,
                         Rooms: item.item.RoomsList,

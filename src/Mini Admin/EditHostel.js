@@ -11,8 +11,11 @@ import {
   ScrollView,
   PermissionsAndroid,
   FlatList,
+  Alert,
 } from 'react-native';
 import {RadioButton, Checkbox} from 'react-native-paper';
+import EntypoIcon from 'react-native-vector-icons/Entypo';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import ImageCropPicker from 'react-native-image-crop-picker';
 import {bg} from '../CONSTANTS/images';
@@ -26,12 +29,14 @@ import axios from 'axios';
 import Geocoder from 'react-native-geocoder';
 import Loading from '../reuseable/Loading';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Dashboard from './Dashboard';
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
-const AddHostel = ({navigation, route}) => {
+const EditHostel = ({navigation, route}) => {
   const [loading, setLoading] = useState(false);
   const [hostel, setHostel] = useState({
+    id: 0,
     name: '',
     phoneNo: '',
     floor: '',
@@ -48,6 +53,7 @@ const AddHostel = ({navigation, route}) => {
     fileType: '',
   });
   const [imagesList, setImagesList] = useState([]);
+  const [oldImages, setOldImages] = useState([]); //already inserted in database
   const [facilitesList, setFacilitesList] = useState([
     {
       Id: 0,
@@ -70,9 +76,21 @@ const AddHostel = ({navigation, route}) => {
       Status: 'unchecked',
     },
   ]);
+
+  //call only first render
+  useEffect(() => {
+    if (typeof route.params?.Id !== 'undefined') {
+      getdetail(route.params.Id);
+    }
+  }, []);
+
+  //call on every time when route change
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      if (typeof route.params !== 'undefined') {
+      if (
+        typeof route.params !== 'undefined' &&
+        typeof route.params?.Latitude != 'undefined'
+      ) {
         console.log(route.params.City);
         setHostel({
           ...hostel,
@@ -85,6 +103,53 @@ const AddHostel = ({navigation, route}) => {
     });
     return () => unsubscribe;
   }, [route]);
+
+  const getdetail = id => {
+    setLoading(true);
+    axios
+      .get(api.get_Hostel_Detail, {
+        params: {
+          id: id,
+        },
+      })
+      .then(res => {
+        if (res.data == false) {
+          alert('Data not found');
+        } else {
+          let hostelinfo = res.data.HostelInfo;
+          setOldImages(res.data.HostelImages);
+          setHostel({
+            ...hostel,
+            id: id,
+            name: hostelinfo.HostelName,
+            phoneNo: hostelinfo.PhoneNo,
+            floor: hostelinfo.Floor,
+            city: hostelinfo.City,
+            address: hostelinfo.Address,
+            latittude: hostelinfo.Latitude,
+            longitude: hostelinfo.Longitude,
+            gender: hostelinfo.Gender,
+          });
+          let facilites = hostelinfo.Facilites.toString().split(',').join(' ');
+
+          const newData = facilitesList.map(item => {
+            if (facilites.includes(item.Name)) {
+              return {
+                ...item,
+                Status: 'checked',
+              };
+            } else {
+              return {...item};
+            }
+          });
+          setFacilitesList(newData);
+        }
+      })
+      .catch(err => alert(err))
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   const ImagePick = async () => {
     try {
@@ -113,46 +178,7 @@ const AddHostel = ({navigation, route}) => {
     }
   };
 
-  // const ImagePick = async () => {
-  //   try {
-  //     //   console.log("Camera permission given");
-  //     let options = {
-  //       mediaType: 'photo',
-  //       maxWidth: 300,
-  //       maxHeight: 550,
-  //       quality: 1,
-
-  //     };
-  //     launchImageLibrary(options, response => {
-  //       if (response.didCancel) {
-  //         //   alert('User cancelled camera picker');
-  //         return;
-  //       } else if (response.errorCode == 'camera_unavailable') {
-  //         //   alert('Camera not available on device');
-  //         return;
-  //       } else if (response.errorCode == 'permission') {
-  //         // alert('Permission not satisfied');
-  //         return;
-  //       } else if (response.errorCode == 'others') {
-  //         //  alert(response.errorMessage);
-  //         return;
-  //       } else {
-  //         setImage({
-  //           fileURI: response.assets[0].uri,
-  //           fileName: response.assets[0].fileName,
-  //           fileType: response.assets[0].type,
-  //         });
-  //       }
-  //       //   this.setState({image: response.assets[0].uri});
-  //       //   this.updateProfile(response.assets[0].uri);
-  //     });
-  //   } catch (err) {
-  //     console.warn(err);
-  //   }
-  // };
   const handleSubmit = async () => {
-    // navigation.navigate('AddRooms', {Id: 0});
-    // return;
     if (
       hostel.name === '' ||
       hostel.phoneNo === '' ||
@@ -168,6 +194,7 @@ const AddHostel = ({navigation, route}) => {
         .map(item => item.Name)
         .toString();
       const formdata = new FormData();
+      formdata.append('Id', hostel.id);
       formdata.append('HostelName', hostel.name);
       formdata.append('PhoneNo', hostel.phoneNo);
       formdata.append('Floor', hostel.floor);
@@ -183,19 +210,16 @@ const AddHostel = ({navigation, route}) => {
             formdata.append('Longitude', res.position.lng);
           })
           .catch(err => {
-            alert(err);
+            alert('error in getting lat/lng.Please enter correct addresss');
             return;
           });
       } else {
         formdata.append('Latitude', hostel.latittude);
         formdata.append('Longitude', hostel.longitude);
       }
-      let userid = await AsyncStorage.getItem('user_id');
-      // formdata.append('User_Id', global.user_id);
-      formdata.append('User_Id', userid);
+      // let userid = await AsyncStorage.getItem('user_id');
+      // formdata.append('User_Id', userid);
       formdata.append('Gender', hostel.gender);
-      // imagesList.length > 0 && formdata.append('File', imagesList);
-
       for (let i = 0; i < imagesList.length; i++) {
         formdata.append(`images[${i}]`, {
           uri: imagesList[i].fileURI,
@@ -203,15 +227,9 @@ const AddHostel = ({navigation, route}) => {
           type: imagesList[i].fileType,
         });
       }
-      // image.fileName !== '' &&
-      //   formdata.append('File', {
-      //     uri: image.fileURI, //Your Image File Path
-      //     type: image.fileType,
-      //     name: image.fileName,
-      //   });
       console.log(formdata);
       axios({
-        url: api.addHostel,
+        url: api.update_hostel,
         method: 'POST',
         data: formdata,
         headers: {
@@ -220,10 +238,11 @@ const AddHostel = ({navigation, route}) => {
         },
       })
         .then(response => {
-          if (response.data.Id) {
-            navigation.navigate('AddRooms', {Id: response.data.Id});
+          if (response.data !== false) {
+            navigation.replace('ViewHostels');
+            alert('Hostel Updated Successfully!');
           } else {
-            alert('Something went wrong.Data not inserted.');
+            alert('Hostel Not Found');
           }
         })
         .catch(err => {
@@ -256,30 +275,68 @@ const AddHostel = ({navigation, route}) => {
     });
     setFacilitesList(newData);
   };
+
+  //----------delete Hostel-------------------
+  const handleDeleteImage = id => {
+    Alert.alert('Delete', 'Are you sure you want to delete Image?', [
+      {
+        text: 'No',
+        // onPress: () => navigation.replace('Dashboard'),
+        style: 'cancel',
+      },
+      {
+        text: 'Yes',
+        onPress: () => {
+          delteImage(id);
+        },
+      },
+    ]);
+  };
+  const delteImage = id => {
+    axios
+      .get(api.delete_hostel_Images, {
+        params: {
+          id: id,
+        },
+      })
+      .then(res => {
+        if (res.data) {
+          alert('Image Deleted Successfully.');
+          const newData = oldImages.filter(item => item.Id !== id);
+          setOldImages(newData);
+        } else {
+          alert('Image Not Found');
+        }
+      })
+      .catch(err => alert(err));
+  };
   return (
     <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <CustomHeader
+        {/* <CustomHeader
           text={'Add Hostel'}
           onBackPress={() => navigation.goBack()}
-        />
+        /> */}
         {loading && <Loading />}
         <View style={{flex: 1, paddingHorizontal: 16}}>
           <Input
             heading={'Name '}
             title="Enter Hostel Name"
+            value={hostel.name}
             onChange={txt => setHostel({...hostel, name: txt})}
           />
           <Input
             heading={'Phone No'}
             title="Enter Phone No."
             keyboardType={'phone-pad'}
+            value={hostel.phoneNo}
             onChange={txt => setHostel({...hostel, phoneNo: txt})}
           />
           {/* <Input heading={'Rooms '} title="Enter Total Rooms" /> */}
           <Input
             heading={'Floor '}
             title="Enter Total Floor"
+            value={hostel.floor}
             onChange={txt => setHostel({...hostel, floor: txt})}
           />
           <Text
@@ -363,19 +420,6 @@ const AddHostel = ({navigation, route}) => {
             value={hostel.city}
             onChange={txt => setHostel({...hostel, city: txt})}
           />
-
-          {/* <Input
-            heading={'Latitude'}
-            title="Enter Latitude or choose from Google Map "
-            value={hostel.latittude}
-            onChange={txt => setHostel({...hostel, latittude: txt})}
-          />
-          <Input
-            heading={'Longitude'}
-            title="Enter Longitude or choose from Google Map "
-            value={hostel.longitude}
-            onChange={txt => setHostel({...hostel, longitude: txt})}
-          /> */}
           <Input
             heading={'Address '}
             title="Enter Address or choose from Google Map "
@@ -385,7 +429,6 @@ const AddHostel = ({navigation, route}) => {
           />
           <CustomButton
             title="Open Map"
-            // onPress={() => navigation.navigate('MapScreen')}
             onPress={() =>
               navigation.navigate('MapScreen', {
                 Latitude: hostel.latittude,
@@ -400,35 +443,39 @@ const AddHostel = ({navigation, route}) => {
               width: 130,
             }}
           />
-          {/* <Text style={styles.facilitesHeading}>Facilites</Text>
-          <View style={styles.facilitesContainer}>
-            <View style={styles.rowView}>
-              <View style={styles.rowView}>
-                <RadioButton value="second" />
-                <Text style={styles.radioButtonText}>Wifi</Text>
-              </View>
-              <View style={styles.rowView}>
-                <RadioButton value="second" />
-                <Text style={styles.radioButtonText}>Study Room</Text>
-              </View>
-              <View style={styles.rowView}>
-                <RadioButton value="second" />
-                <Text style={styles.radioButtonText}>Mess</Text>
-              </View>
-            </View>
-            <View style={styles.rowView}>
-              <View style={styles.rowView}>
-                <RadioButton value="second" />
-                <Text style={styles.radioButtonText}>Laundary</Text>
-              </View>
-              <View style={styles.rowView}>
-                <RadioButton value="second" />
-                <Text style={styles.radioButtonText}>AC</Text>
-              </View>
-            </View>
-          </View> */}
+          <FlatList
+            data={oldImages}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal
+            renderItem={item => {
+              return (
+                <View>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteImage(item.item.Id)}
+                    style={{
+                      position: 'absolute',
+                      top: 30,
+                      right: 20,
+                      zIndex: 999,
+                    }}>
+                    <MaterialIcons name={'delete'} color={'red'} size={30} />
+                  </TouchableOpacity>
+                  <Image
+                    source={{uri: `${api.image}/${item.item.Image}`}}
+                    style={{
+                      ...styles.imageView,
+                      width: SCREEN_WIDTH - 100,
+                      height: 250,
+                      marginHorizontal: 10,
+                      backgroundColor: COLOR.primary,
+                    }}
+                  />
+                </View>
+              );
+            }}
+          />
           <CustomButton
-            title="Choose Image"
+            title="Add More Image"
             onPress={() => ImagePick()}
             titleStyle={{color: COLOR.secondary}}
             style={{
@@ -438,44 +485,47 @@ const AddHostel = ({navigation, route}) => {
               width: 130,
             }}
           />
+
           <FlatList
             data={imagesList}
             keyExtractor={(item, index) => index.toString()}
             horizontal
             renderItem={item => {
               return (
-                <Image
-                  source={{uri: item.item.fileURI}}
-                  // resizeMode={'contain'}
-                  style={{
-                    ...styles.imageView,
-                    width: SCREEN_WIDTH - 100,
-                    height: 250,
-                    marginHorizontal: 10,
-                    backgroundColor: COLOR.primary,
-                  }}
-                />
+                <View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      let newData = imagesList.filter(
+                        element => element.fileName !== item.item.fileName,
+                      );
+                      setImagesList(newData);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: 20,
+                      right: 20,
+                      zIndex: 999,
+                    }}>
+                    <EntypoIcon name={'cross'} color={'red'} size={50} />
+                  </TouchableOpacity>
+                  <Image
+                    source={{uri: item.item.fileURI}}
+                    // resizeMode={'contain'}
+                    style={{
+                      ...styles.imageView,
+                      width: SCREEN_WIDTH - 100,
+                      height: 250,
+                      marginHorizontal: 10,
+                      backgroundColor: COLOR.primary,
+                    }}
+                  />
+                </View>
               );
             }}
           />
-
-          {/* <TouchableOpacity
-            style={styles.imageView}
-            onPress={() => ImagePick()}>
-            {image.fileURI === '' ? (
-              <Text style={{color: '#000', fontSize: 16}}>Choose Image</Text>
-            ) : (
-              // <Text style={{color: '#000', fontSize: 16}}>{image.fileURI}</Text>
-              <Image
-                source={{uri: image.fileURI}}
-                style={{height: '100%', width: '100%'}}
-                resizeMode={'cover'}
-              />
-            )}
-          </TouchableOpacity> */}
         </View>
         <CustomButton
-          title="Add Rooms"
+          title="Save"
           // onPress={() => getPositionFromAddress()}
           onPress={() => handleSubmit()}
           style={{marginBottom: 20, width: '87%'}}
@@ -485,7 +535,7 @@ const AddHostel = ({navigation, route}) => {
   );
 };
 
-export default AddHostel;
+export default EditHostel;
 
 const styles = StyleSheet.create({
   container: {

@@ -20,20 +20,48 @@ import Geocoder from 'react-native-geocoder';
 import {COLOR} from '../CONSTANTS/Colors';
 import CustomSearchBar from '../reuseable/CustomSearchBar';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {useIsFocused} from '@react-navigation/native';
 
-const MapScreen = ({navigation}) => {
+const MapScreen = ({navigation, route}) => {
   const mapViewRef = useRef();
   const [coordinates, setCoordinates] = useState({
-    latitude: 51.506322571783386,
-    longitude: -0.1277460716664791,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.23,
+    // latitude: 51.506322571783386,
+    // longitude: -0.1277460716664791,
+    // latitudeDelta: 0.01,
+    // longitudeDelta: 0.23,
+    latitude: 29.887874368635273,
+    longitude: 69.44955177728671,
+    latitudeDelta: 2.819748261678967,
+    longitudeDelta: 3.680000826716423,
   });
   const [searchText, setSearchText] = useState('');
-
+  let isFocus = useIsFocused();
   useEffect(() => {
-    getCurrentLocation();
-  }, []);
+    if (
+      typeof route.params?.Latitude !== 'undefined' &&
+      typeof route.params?.Longitude !== 'undefined'
+    ) {
+      if (route.params.Latitude !== '' && route.params.Longitude !== '') {
+        let r = {
+          latitude: parseFloat(route.params.Latitude),
+          longitude: parseFloat(route.params.Longitude),
+          // latitudeDelta: 0.03,
+          // longitudeDelta: 0.01,
+          // latitudeDelta: 0.0029664913116747016,
+          // longitudeDelta: 0.002545081079006195,
+          latitudeDelta: 0.0021205102792265507,
+          longitudeDelta: 0.0011476501822471619,
+        };
+        setCoordinates(r);
+        mapViewRef.current.animateToRegion(r, 2000);
+        console.log('lets move...');
+      } else {
+        getCurrentLocation();
+      }
+    } else {
+      getCurrentLocation();
+    }
+  }, [isFocus]);
 
   const getCurrentLocation = () => {
     var response = request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
@@ -57,7 +85,7 @@ const MapScreen = ({navigation}) => {
         },
         error => {
           if (error.code != 5) {
-            console.log(error.message);
+            console.log('error', error.message);
           }
         },
         {
@@ -77,16 +105,24 @@ const MapScreen = ({navigation}) => {
     };
     Geocoder.geocodePosition(NY)
       .then(res => {
-        console.log(res[0]);
+        console.log('handel select', res[0]);
         if (typeof res[0] === 'undefined') {
           alert('Please Choose Correct Location');
         } else {
-          navigation.navigate('AddHostel', {
+          const routes = navigation.getState()?.routes;
+          const prevRoute = routes[routes.length - 2];
+          navigation.navigate(prevRoute.name, {
             Address: res[0].formattedAddress,
             Latitude: coordinates.latitude,
             Longitude: coordinates.longitude,
             City: res[0].locality,
           });
+          // navigation.navigate('AddHostel', {
+          //   Address: res[0].formattedAddress,
+          //   Latitude: coordinates.latitude,
+          //   Longitude: coordinates.longitude,
+          //   City: res[0].locality,
+          // });
         }
       })
       .catch(err => {
@@ -96,6 +132,7 @@ const MapScreen = ({navigation}) => {
       });
   };
   const onRegionChange = region => {
+    console.log('region change...', region);
     setCoordinates({
       latitude: region.latitude,
       longitude: region.longitude,
@@ -114,9 +151,9 @@ const MapScreen = ({navigation}) => {
   }, [searchText]);
 
   const handleSearch = () => {
-    console.log(searchText);
     // Address Geocoding
     if (searchText) {
+      console.log({searchText});
       Geocoder.geocodeAddress(searchText)
         .then(res => {
           // res is an Array of geocoding object (see below)
@@ -126,7 +163,6 @@ const MapScreen = ({navigation}) => {
               ToastAndroid.LONG,
             );
           } else {
-            console.log(res);
             let r = {
               latitude: res[0].position.lat,
               longitude: res[0].position.lng,
@@ -172,7 +208,7 @@ const MapScreen = ({navigation}) => {
         provider={
           Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
         } // remove if not using Google Maps
-        initialRegion={{
+        region={{
           latitude: coordinates.latitude,
           longitude: coordinates.longitude,
           latitudeDelta: coordinates.latitudeDelta,

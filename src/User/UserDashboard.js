@@ -29,11 +29,15 @@ const UserDashboard = ({navigation}) => {
       </Text>
       <CustomButton
         title="View Hostel"
-        onPress={() => navigation.push('SuperAdmin_ViewHostels')}
+        onPress={() => navigation.push('HomeScreen')}
       />
       <CustomButton
-        title="My Hostels"
+        title="Currently Live"
         onPress={() => navigation.navigate('MyHostels')}
+      />
+      <CustomButton
+        title="Pending Request"
+        onPress={() => navigation.navigate('MyPendingHostels')}
       />
       <CustomButton
         title="Favorite Hostels"

@@ -1,31 +1,17 @@
 import React, {useState, useEffect} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import {
-  Avatar,
-  Button,
-  Card,
-  Title,
-  Paragraph,
-  Searchbar,
-} from 'react-native-paper';
+import {View, Text, StyleSheet, ScrollView, FlatList} from 'react-native';
+import {Card, Title, Paragraph} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, {Marker} from 'react-native-maps';
 import {SliderBox} from 'react-native-image-slider-box';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {fonts} from './CONSTANTS/fonts';
-import {api} from './CONSTANTS/api';
-import {COLOR} from './CONSTANTS/Colors';
-import CustomButton from './reuseable/CustomButton';
+import {fonts} from '../CONSTANTS/fonts';
+import {api} from '../CONSTANTS/api';
+import {COLOR} from '../CONSTANTS/Colors';
+import CustomButton from '../reuseable/CustomButton';
 import axios from 'axios';
 
-const HostelDetail = ({navigation, route}) => {
+const HostelDetail_Admin = ({navigation, route}) => {
   const routes = navigation.getState()?.routes;
   const prevRoute = routes[routes.length - 2];
   const [hostelImages, setHostelImages] = useState([]);
@@ -35,7 +21,6 @@ const HostelDetail = ({navigation, route}) => {
   const [userRole, setUserRole] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   useEffect(() => {
-    console.log(route.params.Hostel.Facilites);
     const getUser = async () => {
       let id = await AsyncStorage.getItem('user_id');
       let user = await AsyncStorage.getItem('user');
@@ -96,62 +81,6 @@ const HostelDetail = ({navigation, route}) => {
     );
   };
 
-  //user and MyHostels case
-  const handleCheckout = requestid => {
-    console.log({requestid});
-    axios
-      .get(api.checkout, {
-        params: {
-          requestId: requestid,
-        },
-      })
-      .then(response => {
-        console.log(response.data);
-        if (response.data.success === true) {
-          navigation.replace('Feedback', {
-            H_Id: response.data.data.H_Id,
-            AddFeedback: true,
-          });
-          alert(response.data.message);
-        } else {
-          alert(response.data.message);
-        }
-      })
-      .catch(err => alert(err));
-  };
-
-  const handleFavorite = () => {
-    console.log({userid}, route.params?.Hostel?.Id);
-    if (isFavorite === true) removeFavorite();
-    else addFavorite();
-  };
-
-  const addFavorite = () => {
-    const params = {
-      User_Id: userid,
-      H_Id: route.params?.Hostel?.Id,
-    };
-    axios
-      .post(api.add_Favorite, params)
-      .then(response => {
-        setIsFavorite(true);
-      })
-      .catch(err => {
-        alert(err);
-      });
-  };
-
-  const removeFavorite = () => {
-    axios
-      .get(api.remove_Favorite, {
-        params: {
-          userid: userid,
-          hostelid: route.params?.Hostel?.Id,
-        },
-      })
-      .then(res => setIsFavorite(false))
-      .catch(err => alert(err));
-  };
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -176,23 +105,6 @@ const HostelDetail = ({navigation, route}) => {
               <Title style={{flex: 1}}>
                 Name : {route.params.Hostel.HostelName}
               </Title>
-
-              {userRole == 'User' &&
-                (isFavorite ? (
-                  <AntDesign
-                    name="heart"
-                    size={24}
-                    color={'red'}
-                    onPress={() => handleFavorite()}
-                  />
-                ) : (
-                  <AntDesign
-                    name="hearto"
-                    size={24}
-                    color={'red'}
-                    onPress={() => handleFavorite()}
-                  />
-                ))}
             </View>
             <Paragraph>
               City{'         '} : {route.params.Hostel.City}
@@ -321,63 +233,111 @@ const HostelDetail = ({navigation, route}) => {
           Rooms :{' '}
         </Text>
         {route.params.Rooms.length === 0 ? (
-          <View>
-            <Text style={styles.notFoundText}>No Room Added</Text>
-            {userRole === 'Hostel Manager' && (
-              <CustomButton
-                title="Add Room"
-                onPress={() =>
-                  navigation.replace('AddRooms', {
-                    Id: route.params.Hostel.Id,
-                  })
-                }
-                style={{marginBottom: 10}}
-              />
-            )}
-          </View>
+          <Text style={styles.notFoundText}>No Room Added</Text>
         ) : (
-          route.params.Rooms.map((item, key) => {
-            return (
-              <Card key={key} style={{marginBottom: 5, elevation: 2}}>
-                <Card.Title title={item.RoomType} />
-                <Card.Content>
-                  <Paragraph>Price : PKR {item.Price}</Paragraph>
-                  <Paragraph>Total Rooms : {item.TotalRooms}</Paragraph>
+          <FlatList
+            data={route.params.Rooms}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={item => {
+              return (
+                <View style={styles.card}>
+                  <Text style={styles.card_Title}>{item.item.RoomType}</Text>
+
+                  <Text style={styles.card_Text}>
+                    Price : PKR {item.item.Price}
+                  </Text>
+                  <Text style={styles.card_Text}>
+                    Total Rooms : {item.item.TotalRooms}
+                  </Text>
                   {route.params.Hostel?.Status !== 'Pending' && (
                     <View>
-                      <Paragraph>Total Bed : {item.TotalBeds}</Paragraph>
-                      {item.BookedBeds == null ? (
-                        <Paragraph>Booked Bed : 0</Paragraph>
+                      <Text style={styles.card_Text}>
+                        Total Bed : {item.item.TotalBeds}
+                      </Text>
+                      {item.item.BookedBeds == null ? (
+                        <Text style={styles.card_Text}>Booked Bed : 0</Text>
                       ) : (
-                        <Paragraph>Booked Bed : {item.BookedBeds}</Paragraph>
+                        <Text style={styles.card_Text}>
+                          Booked Bed : {item.item.BookedBeds}
+                        </Text>
                       )}
-                      {getAvailableRooms(item.TotalBeds, item.BookedBeds) <
-                      1 ? (
-                        <Paragraph style={{color: 'red'}}>
+                      {getAvailableRooms(
+                        item.item.TotalBeds,
+                        item.item.BookedBeds,
+                      ) < 1 ? (
+                        <Text style={{...styles.card_Text, color: 'red'}}>
                           Avaiable Bed :{' '}
-                          {getAvailableRooms(item.TotalBeds, item.BookedBeds)}
-                        </Paragraph>
+                          {getAvailableRooms(
+                            item.item.TotalBeds,
+                            item.item.BookedBeds,
+                          )}
+                        </Text>
                       ) : (
-                        <Paragraph style={{color: 'green'}}>
+                        <Text style={{...styles.card_Text, color: 'green'}}>
                           Avaiable Bed :{' '}
-                          {getAvailableRooms(item.TotalBeds, item.BookedBeds)}
-                        </Paragraph>
+                          {getAvailableRooms(
+                            item.item.TotalBeds,
+                            item.item.BookedBeds,
+                          )}
+                        </Text>
                       )}
                     </View>
                   )}
 
-                  <Paragraph>
-                    Facilites :{' '}
-                    {item.Facilites?.length === 0 ? 'N/A' : item.Facilites}
-                  </Paragraph>
-                  <Paragraph>
-                    Description :{' '}
-                    {item.Description?.length === 0 ? 'N/A' : item.Description}
-                  </Paragraph>
-                </Card.Content>
-              </Card>
-            );
-          })
+                  <Text style={styles.card_Text}>
+                    Facilites : {item.item.Facilites}
+                  </Text>
+                  <Text style={styles.card_Text}>
+                    Description : {item.item.Description}
+                  </Text>
+                </View>
+              );
+            }}
+          />
+          //   route.params.Rooms.map((item, key) => {
+          //     return (
+          //       <Card key={key} style={{marginBottom: 5, elevation: 2}}>
+          //         <Card.Title title={item.RoomType} />
+          //         <Card.Content>
+          //           <Paragraph>Price : PKR {item.Price}</Paragraph>
+          //           <Paragraph>Total Rooms : {item.TotalRooms}</Paragraph>
+          //           {route.params.Hostel?.Status !== 'Pending' && (
+          //             <View>
+          //               <Paragraph>Total Bed : {item.TotalBeds}</Paragraph>
+          //               {item.BookedBeds == null ? (
+          //                 <Paragraph>Booked Bed : 0</Paragraph>
+          //               ) : (
+          //                 <Paragraph>Booked Bed : {item.BookedBeds}</Paragraph>
+          //               )}
+          //               {getAvailableRooms(item.TotalBeds, item.BookedBeds) <
+          //               1 ? (
+          //                 <Paragraph style={{color: 'red'}}>
+          //                   Avaiable Bed :{' '}
+          //                   {getAvailableRooms(item.TotalBeds, item.BookedBeds)}
+          //                 </Paragraph>
+          //               ) : (
+          //                 <Paragraph style={{color: 'green'}}>
+          //                   Avaiable Bed :{' '}
+          //                   {getAvailableRooms(item.TotalBeds, item.BookedBeds)}
+          //                 </Paragraph>
+          //               )}
+          //             </View>
+          //           )}
+
+          //           <Paragraph>
+          //             Facilites :{' '}
+          //             {item.Facilites?.length === 0 ? 'N/A' : item.Facilites}
+          //           </Paragraph>
+          //           <Paragraph>
+          //             Description :{' '}
+          //             {item.Description?.length === 0 ? 'N/A' : item.Description}
+          //           </Paragraph>
+          //         </Card.Content>
+          //       </Card>
+          //     );
+          //   })
         )}
         <ItemDevider />
 
@@ -413,8 +373,10 @@ const HostelDetail = ({navigation, route}) => {
 
               // latitudeDelta: 2.819748261678967,
               // longitudeDelta: 3.680000826716423,
-              latitudeDelta: 0.078,
-              longitudeDelta: 0.23,
+              // latitudeDelta: 0.078,
+              // longitudeDelta: 0.23,
+              latitudeDelta: 0.0029664913116747016,
+              longitudeDelta: 0.002545081079006195,
             }}
             onRegionChangeComplete={region => console.log(region)}
             scrollEnabled={true}
@@ -453,36 +415,12 @@ const HostelDetail = ({navigation, route}) => {
             />
           </View>
         )}
-        {/* Showing Book Room Button to User */}
-        {userRole === 'User' && (
-          <View style={{flexDirection: 'row', marginBottom: 10}}>
-            <CustomButton
-              title="View Feedback"
-              onPress={() =>
-                navigation.navigate('Feedback', {
-                  H_Id: route.params.Hostel.Id,
-                  AddFeedback: false,
-                })
-              }
-              style={{flex: 1, margin: 7}}
-            />
-            <CustomButton
-              title="Book Room"
-              onPress={() =>
-                navigation.navigate('BookRoom', {
-                  Rooms: route.params.Rooms,
-                })
-              }
-              style={{flex: 1, margin: 7}}
-            />
-          </View>
-        )}
       </ScrollView>
     </View>
   );
 };
 
-export default HostelDetail;
+export default HostelDetail_Admin;
 
 const styles = StyleSheet.create({
   container: {
@@ -518,5 +456,38 @@ const styles = StyleSheet.create({
   btnText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  card: {
+    marginVertical: 10,
+    elevation: 2,
+    maxWidth: 270,
+    marginHorizontal: 7,
+    // backgroundColor: 'skyblue',
+    backgroundColor: COLOR.primary,
+    padding: 20,
+    borderRadius: 10,
+
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
+  },
+
+  card_Title: {
+    color: COLOR.halfWhite,
+    fontWeight: 'bold',
+    fontSize: 16,
+    lineHeight: 35,
+  },
+  card_Text: {
+    color: COLOR.halfWhite,
+    fontWeight: '500',
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

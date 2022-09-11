@@ -32,8 +32,8 @@ const MenuComponent = props => {
         <MenuItem
           onPress={() => {
             setVisible(!visible);
-            props.route.name !== 'SuperAdmin_ViewHostels' &&
-              props.navigation.replace('SuperAdmin_ViewHostels');
+            props.route.name !== 'HomeScreen' &&
+              props.navigation.replace('HomeScreen');
           }}>
           <Text style={{color: '#000'}}>List View</Text>
         </MenuItem>

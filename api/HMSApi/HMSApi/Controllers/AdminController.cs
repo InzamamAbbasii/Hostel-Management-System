@@ -113,6 +113,7 @@ namespace HMSApi.Controllers
                                                     TotalBookedRooms = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
                                                 },
                                                 isFavorite = db.FavoriteHostels.Any(a => a.User_Id == user_id && a.H_Id == s.Id),
+                                                isBooked = db.BookingRequests.Any(a => a.User_Id == user_id && a.H_Id == s.Id && a.Status=="Approved"),
                                                 HostelImages = db.Hostel_Images.Where(w => w.H_Id == s.Id).Select(ss => ss.Image),
                                                 RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.Id)
                                                                            .Select(room => new
@@ -251,9 +252,10 @@ namespace HMSApi.Controllers
                                                      u => u.Id,
                                                      (r, u) => new { RequestInfo = r, UserInfo = u }
                                                    ).Where(w => w.RequestInfo.Status == "Approved"
-                                                   ).GroupBy(g=>g.RequestInfo.H_Id).Select(u => new
+                                                   ).GroupBy(g=>g.RequestInfo.User_Id).Select(u => new
                                                    {
                                                        Name = u.FirstOrDefault().UserInfo.FirstName + " " + u.FirstOrDefault().UserInfo.LastName,
+                                                       UserID = u.FirstOrDefault().UserInfo.Id,
                                                        u.FirstOrDefault().UserInfo.Email,
                                                        u.FirstOrDefault().UserInfo.CNIC,
                                                        u.FirstOrDefault().UserInfo.PhoneNo,

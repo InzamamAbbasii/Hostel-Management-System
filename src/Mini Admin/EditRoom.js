@@ -25,7 +25,7 @@ import Loading from '../reuseable/Loading';
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
-const AddRooms = ({navigation, route}) => {
+const EditRoom = ({navigation, route}) => {
   const [roomType, setRoomType] = useState('');
   const [totalRooms, setTotalRooms] = useState('');
   const [price, setPrice] = useState('');
@@ -67,20 +67,47 @@ const AddRooms = ({navigation, route}) => {
     },
   ]);
 
-  const handleOnRadioButtonChange = id => {
-    const newData = Room_Types_List.map(item => {
-      if (item.Id === id) {
-        setRoomType(item.Type);
-        return {
-          ...item,
-          Status: 'checked',
-        };
-      } else {
-        return {...item, Status: 'unchecked'};
-      }
-    });
-    setRoom_Types_List(newData);
+  useEffect(() => {
+    getdetail();
+  }, []);
+
+  const getdetail = () => {
+    axios
+      .get(api.get_room_detail, {
+        params: {
+          room_id: route.params.Id,
+        },
+      })
+      .then(res => {
+        if (res.data == false) {
+          alert('Data not found');
+        } else {
+          setRoomType(res.data.RoomType);
+          setTotalRooms(res.data.TotalRooms);
+          setPrice(res.data.Price);
+          setDescription(res.data.Description);
+
+          let facilites = res.data.Facilites.toString().split(',').join(' ');
+
+          const newData = facilitesList.map(item => {
+            if (facilites.includes(item.Name)) {
+              return {
+                ...item,
+                Status: 'checked',
+              };
+            } else {
+              return {...item};
+            }
+          });
+          setFacilitesList(newData);
+        }
+      })
+      .catch(err => alert(err))
+      .finally(() => {
+        setLoading(false);
+      });
   };
+
   const handleOnCheckboxChange = id => {
     const newData = facilitesList.map(item => {
       if (item.Id === id) {
@@ -126,6 +153,7 @@ const AddRooms = ({navigation, route}) => {
         .filter(item => item.Status === 'checked')
         .map(item => item.Name);
       const params = {
+        Id: route.params.Id,
         RoomType: roomType,
         Price: price,
         TotalRooms: totalRooms,
@@ -135,16 +163,14 @@ const AddRooms = ({navigation, route}) => {
           roomType === 'Single Bed' ? 1 : roomType == 'Double Bed' ? 2 : 3,
         H_Id: route.params.Id,
       };
-      console.log('add room params', params);
       axios
-        .post(api.addRoom, params)
+        .post(api.update_room, params)
         .then(response => {
           if (response.data === false) {
-            alert(
-              `Oops!Data Not Saved.\nRoom with type ${roomType} is already exist.`,
-            );
+            alert('Data not found');
           } else {
-            showAlert();
+            navigation.replace('ViewHostels');
+            alert('Room Updated Successfully!');
           }
         })
         .catch(err => {
@@ -158,14 +184,27 @@ const AddRooms = ({navigation, route}) => {
     <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <CustomHeader
-          text={'Add Rooms'}
+          text={'Edit Room'}
           onBackPress={() => navigation.goBack()}
         />
         {loading && <Loading />}
         <View style={{flex: 1, paddingHorizontal: 16}}>
           <Text style={styles.facilitesHeading}>Room Type</Text>
           <View style={styles.roomTypesContainer}>
-            {Room_Types_List.map((item, key) => {
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: '50%',
+              }}>
+              <RadioButton
+                value={roomType}
+                color={COLOR.secondary}
+                status={'checked'}
+              />
+              <Text style={styles.radioButtonText}>{roomType}</Text>
+            </View>
+            {/* {Room_Types_List.map((item, key) => {
               return (
                 <View
                   key={key}
@@ -183,7 +222,7 @@ const AddRooms = ({navigation, route}) => {
                   <Text style={styles.radioButtonText}>{item.Type}</Text>
                 </View>
               );
-            })}
+            })} */}
           </View>
           <Input
             heading={'Rooms'}
@@ -243,7 +282,7 @@ const AddRooms = ({navigation, route}) => {
   );
 };
 
-export default AddRooms;
+export default EditRoom;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
