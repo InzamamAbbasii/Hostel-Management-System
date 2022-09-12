@@ -230,10 +230,14 @@ namespace HMSApi.Controllers
                         var roominfo = db.Hostel_Rooms.FirstOrDefault(w => w.Id == item.R_Id);
                         var roomObj = new
                         {
-                            group.FirstOrDefault().RequestInfo.RoomType,
-                            group.FirstOrDefault().RequestInfo.NoOfBeds,
-                            group.FirstOrDefault().RequestInfo.R_Id,
-                            group.FirstOrDefault().RequestInfo.BookingDate,
+                            /* group.FirstOrDefault().RequestInfo.RoomType,
+                             group.FirstOrDefault().RequestInfo.NoOfBeds,
+                             group.FirstOrDefault().RequestInfo.R_Id,
+                             group.FirstOrDefault().RequestInfo.BookingDate,*/
+                            roominfo.RoomType,
+                            item.RequestInfo.NoOfBeds,
+                            item.RequestInfo.R_Id,
+                            item.RequestInfo.BookingDate,
                             roominfo.Price
                         };
 
@@ -328,34 +332,64 @@ namespace HMSApi.Controllers
             }
         }
 
+
+
         [HttpGet]
-        public HttpResponseMessage Checkout(int requestId)
+        public HttpResponseMessage Checkout(int user_id,int hostel_id)
         {
             try
             {
-                var found = db.BookingRequests.FirstOrDefault(f => f.Id == requestId);
-                if (found == null)
+                using (var db = new Hostel_Management_SystemEntities())
                 {
-                    var responseObj = new
+
+                var found = db.BookingRequests.Where(f => f.User_Id == user_id && f.H_Id==hostel_id).ToList();
+                    found.ForEach(item =>
                     {
-                        success=false,
-                        message="No Record Found",
-                    };
-                    return Request.CreateResponse(HttpStatusCode.OK, responseObj);
+                        item.CheckoutDate = DateTime.Today;
+                        item.Status = "Checkout";
+                    });
+                     db.SaveChanges();
                 }
-                else
+
+                var responseObj = new
                 {
-                    found.CheckoutDate =DateTime.Today;
-                    found.Status = "Checkout";
-                    db.SaveChanges();
-                    var responseObj = new
-                    {
-                        success = true,
-                        message = "Checkout Successfully",
-                        data  = found,
-                    };
-                    return Request.CreateResponse(HttpStatusCode.OK, responseObj);
-                }
+                    success = true,
+                    message = "Checkout Successfully",
+                    H_Id = hostel_id,
+                };
+                return Request.CreateResponse(HttpStatusCode.OK, responseObj);
+                /* if (found.Count()==0)
+                 {
+                     var responseObj = new
+                     {
+                         success = false,
+                         message = "No Record Found",
+                     };
+                     return Request.CreateResponse(HttpStatusCode.OK, responseObj);
+                 }
+                 else
+                 {
+
+                     using (var db = new Hostel_Management_SystemEntities())
+                     {
+
+                         found.ForEach(item =>
+                         {
+                             item.CheckoutDate = DateTime.Today;
+                             item.Status = "Checkout";                         
+                         db.SaveChanges();
+                         }
+                                     );
+                     }
+
+                     var responseObj = new
+                     {
+                         success = true,
+                         message = "Checkout Successfully",
+                         data = found,
+                     };
+                     return Request.CreateResponse(HttpStatusCode.OK, responseObj);
+                 }*/
             }
             catch (Exception ex)
             {
@@ -363,6 +397,42 @@ namespace HMSApi.Controllers
             }
         }
 
+
+        /* [HttpGet]
+         public HttpResponseMessage Checkout(int requestId)
+         {
+             try
+             {
+                 var found = db.BookingRequests.FirstOrDefault(f => f.Id == requestId);
+                 if (found == null)
+                 {
+                     var responseObj = new
+                     {
+                         success=false,
+                         message="No Record Found",
+                     };
+                     return Request.CreateResponse(HttpStatusCode.OK, responseObj);
+                 }
+                 else
+                 {
+                     found.CheckoutDate =DateTime.Today;
+                     found.Status = "Checkout";
+                     db.SaveChanges();
+                     var responseObj = new
+                     {
+                         success = true,
+                         message = "Checkout Successfully",
+                         data  = found,
+                     };
+                     return Request.CreateResponse(HttpStatusCode.OK, responseObj);
+                 }
+             }
+             catch (Exception ex)
+             {
+                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+             }
+         }
+ */
 
         [HttpPost]
         public HttpResponseMessage AddFavorite(FavoriteHostel favorite)

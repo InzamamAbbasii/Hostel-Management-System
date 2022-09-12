@@ -75,6 +75,7 @@ const Feedback = ({navigation, route}) => {
       .then(response => {
         alert('Thanks for your feedback😍');
         getReviews();
+        navigation.replace('UserDashboard');
       })
       .catch(err => console.log(err));
   };

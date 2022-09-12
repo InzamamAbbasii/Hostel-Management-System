@@ -1,4 +1,4 @@
-const BASE_URL = 'http://192.168.1.102/HMSAPI/';
+const BASE_URL = 'http://192.168.1.103/HMSAPI/';
 
 export let api = {
   //image

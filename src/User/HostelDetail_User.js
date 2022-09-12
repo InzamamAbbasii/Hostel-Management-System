@@ -110,18 +110,19 @@ const HostelDetail_User = ({navigation, route}) => {
 
   //user and MyHostels case
   const handleCheckout = requestid => {
-    console.log({requestid});
     axios
       .get(api.checkout, {
         params: {
-          requestId: requestid,
+          // requestId: requestid,
+          user_id: userid,
+          hostel_id: route.params.Hostel.Id,
         },
       })
       .then(response => {
         console.log(response.data);
         if (response.data.success === true) {
           navigation.replace('Feedback', {
-            H_Id: response.data.data.H_Id,
+            H_Id: response.data.H_Id,
             AddFeedback: true,
           });
           alert(response.data.message);
@@ -167,7 +168,8 @@ const HostelDetail_User = ({navigation, route}) => {
   return (
     <View style={styles.container}>
       <CustomHeader text="Detail" onBackPress={() => navigation.goBack()} />
-      {prevRoute.name === 'MyHostels' && userRole === 'User' //on user login😃 when user want to see his own booked hostel
+      {(prevRoute.name === 'MyHostels' || 'MyPendingHostels') &&
+      userRole === 'User' //on user login😃 when user want to see his own booked hostel
         ? route.params && (
             <ScrollView>
               {hostelImages.length === 0 ? (

@@ -134,7 +134,10 @@ const BookRoom = ({navigation, route}) => {
         />
         <View style={{paddingHorizontal: 16, flex: 1}}>
           <View style={{}}>
-            <View style={{...styles.rowView}}>
+            <View
+              style={{
+                ...styles.rowView,
+              }}>
               <Text
                 style={{
                   flex: 1,
@@ -274,6 +277,7 @@ const BookRoom = ({navigation, route}) => {
                   marginHorizontal: 15,
                   textAlign: 'center',
                   fontSize: 16,
+                  color: '#000',
                 }}
                 value={roomCount.toString()}
               />
@@ -344,6 +348,7 @@ const BookRoom = ({navigation, route}) => {
               }}
             />
           </View>
+
           <View
             style={{
               flex: 1,
@@ -370,7 +375,7 @@ const styles = StyleSheet.create({
   rowView: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    // flex: 1,
   },
   facilitesHeading: {
     marginTop: 10,
