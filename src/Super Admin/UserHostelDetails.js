@@ -168,6 +168,7 @@ const UserHostelDetails = ({navigation, route}) => {
     <View style={styles.container}>
       <CustomHeader
         text="User Hostel Detail"
+        navigation={navigation}
         onBackPress={() => navigation.goBack()}
       />
 

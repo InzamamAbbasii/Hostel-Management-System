@@ -159,6 +159,7 @@ const AddRooms = ({navigation, route}) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <CustomHeader
           text={'Add Rooms'}
+          navigation={navigation}
           onBackPress={() => navigation.goBack()}
         />
         {loading && <Loading />}

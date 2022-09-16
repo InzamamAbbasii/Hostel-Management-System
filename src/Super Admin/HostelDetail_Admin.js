@@ -15,6 +15,7 @@ const HostelDetail_Admin = ({navigation, route}) => {
   const routes = navigation.getState()?.routes;
   const prevRoute = routes[routes.length - 2];
   const [hostelImages, setHostelImages] = useState([]);
+  const [hostelersList, setHostelersList] = useState([]);
 
   const [userid, setUserid] = useState(0);
   const [user, setUser] = useState(null);
@@ -32,6 +33,10 @@ const HostelDetail_Admin = ({navigation, route}) => {
       }
     };
     getUser();
+    if (route.params) {
+      // setRoomsList(route.params.Rooms);
+      route.params?.Users && setHostelersList(route.params?.Users);
+    }
     setHostelImages([]);
     route.params?.HostelImages?.forEach(element => {
       let imagepath = `${api.image}${element}`;
@@ -340,6 +345,55 @@ const HostelDetail_Admin = ({navigation, route}) => {
           //   })
         )}
         <ItemDevider />
+        {route?.params?.Hostel?.Status === 'Approved' && (
+          <View>
+            <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
+              Hostelers :
+            </Text>
+            {hostelersList?.length === 0 ? (
+              <View>
+                <Text style={styles.notFoundText}>
+                  Not Booked by any person
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={hostelersList}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={item => {
+                  return (
+                    <View
+                      style={{
+                        ...styles.card,
+                        width: 220,
+                        backgroundColor: '#000',
+                      }}>
+                      <Text style={styles.card_Title}>{item.item.Name}</Text>
+                      <Text style={styles.card_Text}>
+                        Email : {item.item.Email}
+                      </Text>
+                      <Text style={styles.card_Text}>
+                        PhoneNo : {item.item.PhoneNo}
+                      </Text>
+                      <Text style={styles.card_Text}>
+                        CNIC : {item.item.CNIC}
+                      </Text>
+                      <Text style={styles.card_Text}>
+                        Institude :{' '}
+                        {item.item.InstitudeName == null
+                          ? 'N/A'
+                          : item.item.InstitudeName}
+                      </Text>
+                    </View>
+                  );
+                }}
+              />
+            )}
+            <ItemDevider />
+          </View>
+        )}
 
         <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
           Location :

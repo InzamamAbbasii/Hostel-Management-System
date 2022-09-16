@@ -64,6 +64,7 @@ const HostelDetail_User = ({navigation, route}) => {
     console.log(r);
     setCoordinates(r);
     // mapViewRef.current.animateToRegion(r, 2000);
+
     mapViewRef.current.animateCamera({
       center: {
         latitude: 33.64170455932617,
@@ -167,8 +168,13 @@ const HostelDetail_User = ({navigation, route}) => {
   };
   return (
     <View style={styles.container}>
-      <CustomHeader text="Detail" onBackPress={() => navigation.goBack()} />
-      {(prevRoute.name === 'MyHostels' || 'MyPendingHostels') &&
+      <CustomHeader
+        text="Detail"
+        navigation={navigation}
+        onBackPress={() => navigation.goBack()}
+      />
+      {(prevRoute.name === 'MyHostels' ||
+        prevRoute.name === 'MyPendingHostels') &&
       userRole === 'User' //on user login😃 when user want to see his own booked hostel
         ? route.params && (
             <ScrollView>
@@ -268,6 +274,7 @@ const HostelDetail_User = ({navigation, route}) => {
                   overflow: 'hidden',
                 }}>
                 <MapView
+                  ref={mapViewRef}
                   style={{
                     flex: 1,
                   }}

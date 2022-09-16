@@ -10,6 +10,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
+import {RadioButton} from 'react-native-paper';
 import {Picker} from '@react-native-picker/picker';
 import {COLOR} from '../CONSTANTS/Colors';
 import {fonts} from '../CONSTANTS/fonts';
@@ -19,6 +20,7 @@ import {bg, logo2} from '../CONSTANTS/images';
 import axios from 'axios';
 import {api} from '../CONSTANTS/api';
 import Loading from '../reuseable/Loading';
+import {style} from 'deprecated-react-native-prop-types/DeprecatedImagePropType';
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 
@@ -28,6 +30,7 @@ const SignupScreen = ({navigation}) => {
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
+  const [gender, setGender] = useState('male');
   const [cnic, setCnic] = useState('');
   const [phoneno, setPhoneno] = useState('');
   const [occupation, setOccupation] = useState('');
@@ -70,6 +73,7 @@ const SignupScreen = ({navigation}) => {
         FirstName: firstname,
         LastName: lastname,
         Email: email,
+        Gender: gender,
         CNIC: cnic,
         PhoneNo: phoneno,
         InstitudeName: institudename,
@@ -81,9 +85,6 @@ const SignupScreen = ({navigation}) => {
         axios
           .post(api.signup, params)
           .then(response => {
-            // accounttype === 'User'
-            //   ? navigation.navigate('HomeScreen')
-            //   : navigation.navigate('Dashboard');
             alert('Register Successfully.');
             navigation.replace('LoginScreen');
           })
@@ -175,6 +176,37 @@ const SignupScreen = ({navigation}) => {
               keyboardType={'email-address'}
               onChange={txt => setEmail(txt)}
             />
+            <View>
+              <Text
+                style={{
+                  marginTop: 10,
+                  marginLeft: 3,
+                  fontSize: 15,
+                  // fontFamily: fonts.regular,
+                  color: '#303030',
+                }}>
+                Gender
+              </Text>
+
+              <View style={styles.rowView}>
+                <View style={styles.rowView}>
+                  <RadioButton
+                    color={COLOR.secondary}
+                    status={gender === 'male' ? 'checked' : 'unchecked'}
+                    onPress={() => setGender('male')}
+                  />
+                  <Text style={styles.radioButtonText}>Male</Text>
+                </View>
+                <View style={styles.rowView}>
+                  <RadioButton
+                    color={COLOR.secondary}
+                    status={gender === 'female' ? 'checked' : 'unchecked'}
+                    onPress={() => setGender('female')}
+                  />
+                  <Text style={styles.radioButtonText}>Female</Text>
+                </View>
+              </View>
+            </View>
             <Input
               heading={'CNIC'}
               title="xxxxx-xxxxxxx-x"
@@ -306,5 +338,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLOR.txtColor,
     fontFamily: fonts.medium,
+  },
+  rowView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  radioButtonText: {
+    fontSize: 16,
+    color: '#000',
+    fontFamily: fonts.regular,
+    marginRight: 50,
   },
 });

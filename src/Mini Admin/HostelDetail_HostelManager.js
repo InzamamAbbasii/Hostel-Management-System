@@ -25,9 +25,13 @@ import {useIsFocused} from '@react-navigation/native';
 const HostelDetail_HostelManager = ({navigation, route}) => {
   const [hostelImages, setHostelImages] = useState([]);
   const [roomsList, setRoomsList] = useState([]);
+  const [hostelersList, setHostelersList] = useState([]);
   let isFocus = useIsFocused();
   useEffect(() => {
-    if (route.params) setRoomsList(route.params.Rooms);
+    if (route.params) {
+      setRoomsList(route.params.Rooms);
+      route.params?.Users && setHostelersList(route.params?.Users);
+    }
     setHostelImages([]);
     route.params?.HostelImages?.forEach(element => {
       let imagepath = `${api.image}${element}`;
@@ -125,6 +129,7 @@ const HostelDetail_HostelManager = ({navigation, route}) => {
       <ScrollView>
         <CustomHeader
           text="Detail_HostelManager"
+          navigation={navigation}
           onBackPress={() => navigation.goBack()}
         />
         {hostelImages.length === 0 ? (
@@ -202,125 +207,166 @@ const HostelDetail_HostelManager = ({navigation, route}) => {
         </Card>
 
         <ItemDevider />
-
-        <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
-          Rooms :{' '}
-        </Text>
-        {roomsList.length === 0 ? (
-          <View>
-            <Text style={styles.notFoundText}>No Room Added</Text>
-            <CustomButton
-              title="Add Room"
-              onPress={() =>
-                navigation.replace('AddRooms', {
-                  Id: route.params.Hostel.Id,
-                })
-              }
-              style={{marginBottom: 10}}
-            />
-          </View>
-        ) : (
-          <FlatList
-            data={roomsList}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={item => {
-              return (
-                <View style={styles.card}>
-                  <View style={{position: 'absolute', right: 50, top: 10}}>
-                    <FontAwesome
-                      name="edit"
-                      color={'#FFF'}
-                      size={20}
-                      onPress={() =>
-                        navigation.navigate('EditRoom', {Id: item.item.Id})
-                      }
-                    />
-                  </View>
-                  <View style={{position: 'absolute', right: 10, top: 10}}>
-                    <MaterialIcons
-                      name="delete"
-                      color={'#FFF'}
-                      size={20}
-                      onPress={() => handleDeleteRoom(item.item.Id)}
-                    />
-                  </View>
-                  <Text style={styles.card_Title}>{item.item.RoomType}</Text>
-                  <Text style={styles.card_Text}>
-                    Price : PKR {item.item.Price}
-                  </Text>
-                  <Text style={styles.card_Text}>
-                    Total Rooms : {item.item.TotalRooms}
-                  </Text>
-                  {route.params.Hostel?.Status !== 'Pending' && (
-                    <View>
-                      <Text style={styles.card_Text}>
-                        Total Bed : {item.item.TotalBeds}
-                      </Text>
-                      {item.item.BookedBeds == null ? (
-                        <Text style={styles.card_Text}>Booked Bed : 0</Text>
-                      ) : (
-                        <Text style={styles.card_Text}>
-                          Booked Bed : {item.item.BookedBeds}
-                        </Text>
-                      )}
-                      {getAvailableRooms(
-                        item.item.TotalBeds,
-                        item.item.BookedBeds,
-                      ) < 1 ? (
-                        <Text style={{...styles.card_Text, color: 'red'}}>
-                          Avaiable Bed :{' '}
-                          {getAvailableRooms(
-                            item.item.TotalBeds,
-                            item.item.BookedBeds,
-                          )}
-                        </Text>
-                      ) : (
-                        <Text style={{...styles.card_Text, color: 'green'}}>
-                          Avaiable Bed :{' '}
-                          {getAvailableRooms(
-                            item.item.TotalBeds,
-                            item.item.BookedBeds,
-                          )}
-                        </Text>
-                      )}
+        <View>
+          <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
+            Rooms :{' '}
+          </Text>
+          {roomsList.length === 0 ? (
+            <View>
+              <Text style={styles.notFoundText}>No Room Added</Text>
+              <CustomButton
+                title="Add Room"
+                onPress={() =>
+                  navigation.replace('AddRooms', {
+                    Id: route.params.Hostel.Id,
+                  })
+                }
+                style={{marginBottom: 10}}
+              />
+            </View>
+          ) : (
+            <FlatList
+              data={roomsList}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={item => {
+                return (
+                  <View style={styles.card}>
+                    <View style={{position: 'absolute', right: 50, top: 10}}>
+                      <FontAwesome
+                        name="edit"
+                        color={'#FFF'}
+                        size={20}
+                        onPress={() =>
+                          navigation.navigate('EditRoom', {Id: item.item.Id})
+                        }
+                      />
                     </View>
-                  )}
+                    <View style={{position: 'absolute', right: 10, top: 10}}>
+                      <MaterialIcons
+                        name="delete"
+                        color={'#FFF'}
+                        size={20}
+                        onPress={() => handleDeleteRoom(item.item.Id)}
+                      />
+                    </View>
+                    <Text style={styles.card_Title}>{item.item.RoomType}</Text>
+                    <Text style={styles.card_Text}>
+                      Price : PKR {item.item.Price}
+                    </Text>
+                    <Text style={styles.card_Text}>
+                      Total Rooms : {item.item.TotalRooms}
+                    </Text>
+                    {route.params.Hostel?.Status !== 'Pending' && (
+                      <View>
+                        <Text style={styles.card_Text}>
+                          Total Bed : {item.item.TotalBeds}
+                        </Text>
+                        {item.item.BookedBeds == null ? (
+                          <Text style={styles.card_Text}>Booked Bed : 0</Text>
+                        ) : (
+                          <Text style={styles.card_Text}>
+                            Booked Bed : {item.item.BookedBeds}
+                          </Text>
+                        )}
+                        {getAvailableRooms(
+                          item.item.TotalBeds,
+                          item.item.BookedBeds,
+                        ) < 1 ? (
+                          <Text style={{...styles.card_Text, color: 'red'}}>
+                            Avaiable Bed :{' '}
+                            {getAvailableRooms(
+                              item.item.TotalBeds,
+                              item.item.BookedBeds,
+                            )}
+                          </Text>
+                        ) : (
+                          <Text style={{...styles.card_Text, color: 'green'}}>
+                            Avaiable Bed :{' '}
+                            {getAvailableRooms(
+                              item.item.TotalBeds,
+                              item.item.BookedBeds,
+                            )}
+                          </Text>
+                        )}
+                      </View>
+                    )}
 
-                  <Text style={styles.card_Text}>
-                    Facilites : {item.item.Facilites}
-                  </Text>
-                  <Text style={styles.card_Text}>
-                    Description : {item.item.Description}
-                  </Text>
-                </View>
-              );
-            }}
-            ListFooterComponent={
-              roomsList.length < 3 ? (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.replace('AddRooms', {
-                      Id: route.params.Hostel.Id,
-                    })
-                  }
-                  style={{
-                    ...styles.card,
-                    height: 230,
-                    backgroundColor: 'transparent',
-                    borderWidth: 1,
-                    borderColor: COLOR.primary,
-                    elevation: 0,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <Feather name="plus" color={'#000'} size={105} />
-                </TouchableOpacity>
-              ) : null
-            }
-          />
-        )}
+                    <Text style={styles.card_Text}>
+                      Facilites : {item.item.Facilites}
+                    </Text>
+                    <Text style={styles.card_Text}>
+                      Description : {item.item.Description}
+                    </Text>
+                  </View>
+                );
+              }}
+              ListFooterComponent={
+                roomsList.length < 3 ? (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.replace('AddRooms', {
+                        Id: route.params.Hostel.Id,
+                      })
+                    }
+                    style={{
+                      ...styles.card,
+                      height: 230,
+                      backgroundColor: 'transparent',
+                      borderWidth: 1,
+                      borderColor: COLOR.primary,
+                      elevation: 0,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Feather name="plus" color={'#000'} size={105} />
+                  </TouchableOpacity>
+                ) : null
+              }
+            />
+          )}
+        </View>
+        <ItemDevider />
+
+        <View>
+          <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>
+            Hostelers :
+          </Text>
+          {hostelersList?.length === 0 ? (
+            <View>
+              <Text style={styles.notFoundText}>Not Booked by any person</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={hostelersList}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={item => {
+                return (
+                  <View
+                    style={{
+                      ...styles.card,
+                      width: 220,
+                      backgroundColor: '#000',
+                    }}>
+                    <Text style={styles.card_Title}>{item.item.Name}</Text>
+                    <Text style={styles.card_Text}>
+                      Email : {item.item.Email}
+                    </Text>
+                    <Text style={styles.card_Text}>
+                      PhoneNo : {item.item.PhoneNo}
+                    </Text>
+                    <Text style={styles.card_Text}>
+                      CNIC : {item.item.CNIC}
+                    </Text>
+                  </View>
+                );
+              }}
+            />
+          )}
+        </View>
         <ItemDevider />
 
         <Text style={{...styles.text, fontWeight: 'bold', fontSize: 18}}>

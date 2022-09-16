@@ -147,7 +147,7 @@ namespace HMSApi.Controllers
                                                        u.RequestInfo.RoomType,
                                                        u.RequestInfo.NoOfBeds,
                                                    })
-                                            }).ToList();
+                                            }).OrderBy(o=>o.Hostel.HostelName).ToList();
 
                 return Request.CreateResponse(HttpStatusCode.OK, hostelsList);
             }
@@ -156,6 +156,97 @@ namespace HMSApi.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+
+        [HttpGet]
+        //Getting all approved hostels 
+        public HttpResponseMessage GetHostelsByInstitudeName(int user_id,string institude_name)
+        {
+            try
+            {
+                var hostelsList = db.BookingRequests.Join(db.Users, //all users detail who correctly live in this hostel
+                                                     r => r.User_Id,
+                                                     u => u.Id,
+                                                     (r, u) => new { RequestInfo = r, UserInfo = u }
+                                                   ).Where(w => w.RequestInfo.Status == "Approved" &&
+                                                   w.UserInfo.InstitudeName.Contains(institude_name)
+                                                   ).Join(db.Hostels,
+                                                      r => r.RequestInfo.H_Id,
+                                                     h => h.Id,
+                                                     (r, h) => new { RequestInfo = r, HostelInfo = h }
+                                                   ).GroupBy(g => g.HostelInfo.Id).Select(s => s.FirstOrDefault()).AsEnumerable().Select(s => new
+                                                   {
+
+                                                       Hostel = new
+                                                       {
+                                                           s.HostelInfo.Id,
+                                                           s.HostelInfo.HostelName,
+                                                           s.HostelInfo.PhoneNo,
+                                                           s.HostelInfo.Floor,
+                                                           s.HostelInfo.Facilites,
+                                                           s.HostelInfo.City,
+                                                           s.HostelInfo.Address,
+                                                           s.HostelInfo.Image,
+                                                           s.HostelInfo.Latitude,
+                                                           s.HostelInfo.Longitude,
+                                                           s.HostelInfo.Status,
+                                                           s.HostelInfo.User_Id,
+                                                           s.HostelInfo.Gender,
+                                                           MinPrice = db.Hostel_Rooms.Where(w => w.H_Id == s.HostelInfo.Id).Min(m => m.Price),
+                                                           MaxPrice = db.Hostel_Rooms.Where(w => w.H_Id == s.HostelInfo.Id).Max(m => m.Price),
+                                                           TotalRooms = db.Hostel_Rooms.Where(w => w.H_Id == s.HostelInfo.Id).Sum(sm => sm.TotalRooms),//total rooms in hostel
+                                                           TotalBookedRooms = db.BookingRequests.Where(w => w.H_Id == s.HostelInfo.Id && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
+                                                       },
+                                                       isFavorite = db.FavoriteHostels.Any(a => a.User_Id == user_id && a.H_Id == s.HostelInfo.Id),
+                                                       isBooked = db.BookingRequests.Any(a => a.User_Id == user_id && a.H_Id == s.HostelInfo.Id && a.Status == "Approved"),
+                                                       HostelImages = db.Hostel_Images.Where(w => w.H_Id == s.HostelInfo.Id).Select(ss => ss.Image),
+                                                       RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.HostelInfo.Id)
+                                                                         .Select(room => new
+                                                                         {
+                                                                             Id = room.Id,
+                                                                             RoomType = room.RoomType,
+                                                                             Price = room.Price,
+                                                                             Facilites = room.Facilites,
+                                                                             Description = room.Description,
+                                                                             H_Id = room.H_Id,
+                                                                             TotalRooms = room.TotalRooms,
+                                                                             TotalBeds = room.TotalRooms * room.BedsInRoom,
+                                                                             BedsInRoom = room.BedsInRoom,//total no of beds in one room
+                                                                             BookedBeds = db.BookingRequests.Where(w => w.H_Id == s.HostelInfo.Id && w.Status == "Approved" && w.RoomType == room.RoomType)
+                                                                         .GroupBy(g => g.RoomType)
+                                                                         .Select(r => r.Sum(c => c.NoOfBeds)).FirstOrDefault()
+                                                                         }).ToList(),
+                                                       Rating = GetRating(s.HostelInfo.Id),//calling self created method for rating
+                                                       Users = db.BookingRequests.Join(db.Users, //all users detail who correctly live in this hostel
+                                                   r => r.User_Id,
+                                                   u => u.Id,
+                                                   (r, u) => new { RequestInfo = r, UserInfo = u }
+                                                 ).Where(w => w.RequestInfo.Status == "Approved" && w.RequestInfo.H_Id == s.HostelInfo.Id
+                                                 ).Select(u => new
+                                                 {
+                                                     Name = u.UserInfo.FirstName + " " + u.UserInfo.LastName,
+                                                     u.UserInfo.Email,
+                                                     u.UserInfo.CNIC,
+                                                     u.UserInfo.PhoneNo,
+                                                     u.UserInfo.Occupation,
+                                                     u.UserInfo.Reg_No,
+                                                     u.UserInfo.InstitudeName,
+                                                     u.RequestInfo.BookingDate,
+                                                     u.RequestInfo.CheckoutDate,
+                                                     u.RequestInfo.RoomType,
+                                                     u.RequestInfo.NoOfBeds,
+                                                 })
+                                                   }).OrderBy(o => o.Hostel.HostelName);
+
+
+
+                return Request.CreateResponse(HttpStatusCode.OK, hostelsList);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
 
         [HttpGet]
         public HttpResponseMessage ApproveHostel(int id) //id=hostel id

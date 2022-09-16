@@ -1,4 +1,4 @@
-const BASE_URL = 'http://192.168.1.103/HMSAPI/';
+const BASE_URL = 'http://192.168.1.102/HMSAPI/';
 
 export let api = {
   //image
@@ -31,6 +31,7 @@ export let api = {
   approve_Hostel: BASE_URL + 'api/Admin/ApproveHostel',
   reject_Hostel: BASE_URL + 'api/Admin/RejectHostel',
   get_HostelManagers_List: BASE_URL + 'api/Admin/GetHostelManagers',
+  get_Hostel_By_InstitudeName: BASE_URL + 'api/Admin/GetHostelsByInstitudeName',
 
   //User api's
   book_room: BASE_URL + 'api/User/BookRoom',

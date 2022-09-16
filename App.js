@@ -19,6 +19,7 @@ import MapScreen from './src/Mini Admin/MapScreen';
 import HostelDetail_HostelManager from './src/Mini Admin/HostelDetail_HostelManager';
 import EditRoom from './src/Mini Admin/EditRoom';
 import EditHostel from './src/Mini Admin/EditHostel';
+import MapView_BIITStudents from './src/Super Admin/MapView_BIITStudents';
 
 //Super Admin
 import SuperAdmin_Dashboard from './src/Super Admin/SuperAdmin_Dashboard';
@@ -123,6 +124,11 @@ const App = ({navigation}) => {
           name="Search"
           component={Search}
           options={{headerShown: true}}
+        />
+        <Stack.Screen
+          name="MapView_BIITStudents"
+          component={MapView_BIITStudents}
+          // options={{headerShown: true}}
         />
         <Stack.Screen
           name="HostelDetail_Admin"

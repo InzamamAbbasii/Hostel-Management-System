@@ -7,6 +7,7 @@ import {
   Paragraph,
   Searchbar,
 } from 'react-native-paper';
+
 import {hostel_1} from '../CONSTANTS/images';
 import {
   View,
@@ -16,7 +17,9 @@ import {
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -31,6 +34,7 @@ import MenuComponent from './reuseable/MenuComponent';
 
 const HomeScreen = ({navigation, route}) => {
   const mapViewRef = useRef(null);
+  const flatlistRef = useRef(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [data, setData] = useState([]);
   const [dataCopy, setDataCopy] = useState([]);
@@ -42,13 +46,10 @@ const HomeScreen = ({navigation, route}) => {
 
   const [user_id, setUser_id] = useState(0);
 
-  const [visible, setVisible] = useState(false);
-
-  const hideMenu = () => setVisible(false);
-
-  const showMenu = () => setVisible(true);
-
-  const onChangeSearch = query => setSearchQuery(query);
+  const [showFilterView, setShowFilterView] = useState(false);
+  const [startPrice, setStartPrice] = useState(0);
+  const [endPrice, setEndPrice] = useState(0);
+  const [shortedValue, setShortedValue] = useState('hostel name');
 
   useEffect(() => {
     // console.log(route);
@@ -64,6 +65,8 @@ const HomeScreen = ({navigation, route}) => {
 
   const getHostels = async () => {
     let id = await AsyncStorage.getItem('user_id');
+    let user = await AsyncStorage.getItem('user');
+    if (user !== null) user = JSON.parse(user);
     axios
       .get(api.get_Hostels, {
         params: {
@@ -71,8 +74,26 @@ const HomeScreen = ({navigation, route}) => {
         },
       })
       .then(res => {
-        setData(res.data);
-        setDataCopy(res.data);
+        //--> to show all record---------------------
+        // setData(res.data);
+        // setDataCopy(res.data);
+
+        // --> to show record according to loggedin user gender i.e male or female
+        if (user !== null && user.AccountType === 'User') {
+          //filter hostel by loggednin user Gender
+          let filter = res.data?.filter(
+            item =>
+              item?.Hostel?.Gender?.toLowerCase() ==
+              user?.Gender?.toLowerCase(),
+          );
+          // console.log(filter);
+          setData(filter);
+          setDataCopy(filter);
+        } else {
+          //storing all hostels
+          setData(res.data);
+          setDataCopy(res.data);
+        }
       })
       .catch(err => alert(err))
       .finally(() => {
@@ -101,12 +122,144 @@ const HomeScreen = ({navigation, route}) => {
       if (dataCopy.length > 0) setData(dataCopy);
     }
   };
+  const handleFilter = () => {
+    if (startPrice !== 0 && endPrice !== 0) {
+      const filterData = dataCopy.filter(
+        item =>
+          item.Hostel.MinPrice >= startPrice && // 12500>=500  true
+          item.Hostel.MinPrice <= endPrice, // 12500<=15000 true // 16500>=500  true
+        // item.Hostel.MaxPrice <= endPrice, // 16500<=15000  true
+      );
+      setData(filterData);
+    } else {
+      alert('Please enter price range to filter record.');
+    }
+  };
+
+  const handleSorting = value => {
+    setShortedValue(value);
+    if (data?.length > 0 && value == 'hostel name') {
+      // Sort the numbers in ascending order:
+      let sorted = data.sort(function (a, b) {
+        return ('' + a.Hostel.HostelName).localeCompare(b.Hostel.HostelName);
+      });
+      setData(sorted);
+      flatlistRef?.current?.scrollToOffset({animated: false, offset: 0}); //scroll flatlist to starting index
+    } else if (data?.length > 0 && value == 'lowest price') {
+      // Sort the numbers in ascending order:
+      let sorted = data.sort(function (a, b) {
+        return a.Hostel.MinPrice - b.Hostel.MinPrice;
+      });
+      setData(sorted);
+      flatlistRef?.current?.scrollToOffset({animated: false, offset: 0}); //scroll flatlist to starting index
+    } else if (data?.length > 0 && value == 'highest price') {
+      // Sort the numbers in descending order:
+      let sorted = data.sort(function (a, b) {
+        return b.Hostel.MinPrice - a.Hostel.MinPrice;
+      });
+      setData(sorted);
+      flatlistRef?.current?.scrollToOffset({animated: false, offset: 0}); //scroll flatlist to starting index
+    } else if (data?.length > 0 && value == 'best rated') {
+      // Sort the numbers in descending order based on hostel rating
+      let sorted = data.sort(function (a, b) {
+        return b.Rating.AverageRating - a.Rating.AverageRating;
+      });
+      setData(sorted);
+      flatlistRef?.current?.scrollToOffset({animated: false, offset: 0}); //scroll flatlist to starting index
+    }
+  };
+
+  const handleClearFilter = () => {
+    // setShortedValue('hostel name');
+    setStartPrice(0);
+    setEndPrice(0);
+    setData(dataCopy);
+    setShowFilterView(false);
+  };
+  // const FilterComponent = () => {
+
+  //   return (
+  //     <View
+  //       style={{
+  //         borderWidth: 1,
+  //         borderColor: COLOR.secondary,
+  //         padding: 10,
+  //       }}>
+  //       <View
+  //         style={{
+  //           flexDirection: 'row',
+  //           alignItems: 'center',
+  //         }}>
+  //         <Text style={{color: '#000', fontSize: 14}}>Price Range :</Text>
+  //         <TextInput
+  //           placeholder="Starting Price"
+  //           style={styles.priceInput}
+  //           keyboardType={'decimal-pad'}
+  //           value={startPrice}
+  //           onChangeText={txt => setStartPrice(txt)}
+  //         />
+  //         <Text style={{color: '#000'}}> to </Text>
+  //         <TextInput
+  //           placeholder="Ending price"
+  //           style={styles.priceInput}
+  //           keyboardType={'decimal-pad'}
+  //           value={endPrice}
+  //           onChangeText={txt => setEndPrice(txt)}
+  //         />
+  //       </View>
+
+  //       <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+  //         <TouchableOpacity
+  //           style={{...styles.filterButtons, backgroundColor: '#FFF'}}
+  //           onPress={() => handleClearFilter()}>
+  //           <Text style={{...styles.loginTxt, color: COLOR.secondary}}>
+  //             Clear Filter
+  //           </Text>
+  //         </TouchableOpacity>
+  //         <TouchableOpacity
+  //           style={styles.filterButtons}
+  //           onPress={() => handleFilter()}>
+  //           <Text style={styles.loginTxt}>Filter</Text>
+  //         </TouchableOpacity>
+  //       </View>
+  //     </View>
+  //   );
+  // };
+
+  const SortingComponent = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 10,
+          justifyContent: 'space-between',
+        }}>
+        <Text style={{color: '#000', fontSize: 14}}>Sorted By :</Text>
+        <View style={styles.pickerView}>
+          <Picker
+            style={{flex: 1}}
+            selectedValue={shortedValue}
+            onValueChange={(itemValue, itemIndex) => handleSorting(itemValue)}>
+            <Picker.Item label="Hostel Name" value="hostel name" />
+            <Picker.Item label="Lowest Price" value="lowest price" />
+            <Picker.Item label="Highest Price" value="highest price" />
+            <Picker.Item label="Best Rated" value="best rated" />
+          </Picker>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={{flex: 1, backgroundColor: '#FFF'}}>
       {user_id === null ? (
         <View>
-          <CustomHeader text="Home" showBackButton={false} />
+          <CustomHeader
+            text="Home"
+            navigation={navigation}
+            showBackButton={false}
+          />
           <TouchableOpacity
             style={styles.btnLogin}
             onPress={() => navigation.navigate('LoginScreen')}>
@@ -114,14 +267,83 @@ const HomeScreen = ({navigation, route}) => {
           </TouchableOpacity>
         </View>
       ) : (
-        <CustomHeader text="Home" onBackPress={() => navigation.goBack()} />
+        <CustomHeader
+          text="Home"
+          navigation={navigation}
+          onBackPress={() => navigation.goBack()}
+        />
       )}
       <MenuComponent navigation={navigation} route={route} />
-      <Searchbar
-        placeholder="Search"
-        onChangeText={txt => setSearchText(txt)}
-        value={searchText}
-      />
+      <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <Searchbar
+          style={{flex: 1}}
+          placeholder="Search Hostel"
+          onChangeText={txt => setSearchText(txt)}
+          value={searchText}
+        />
+        {showFilterView ? (
+          <MaterialCommunityIcons
+            onPress={() => setShowFilterView(!showFilterView)}
+            name="filter"
+            color={COLOR.secondary}
+            size={55}
+          />
+        ) : (
+          <MaterialCommunityIcons
+            onPress={() => setShowFilterView(!showFilterView)}
+            name="filter-outline"
+            color={COLOR.secondary}
+            size={55}
+          />
+        )}
+      </View>
+      <SortingComponent />
+      {showFilterView && (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: COLOR.secondary,
+            padding: 10,
+          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
+            <Text style={{color: '#000', fontSize: 14}}>Price Range :</Text>
+            <TextInput
+              placeholder="Starting Price"
+              style={styles.priceInput}
+              keyboardType={'decimal-pad'}
+              value={startPrice}
+              onChangeText={txt => setStartPrice(txt)}
+            />
+            <Text style={{color: '#000'}}> to </Text>
+            <TextInput
+              placeholder="Ending price"
+              style={styles.priceInput}
+              keyboardType={'decimal-pad'}
+              value={endPrice}
+              onChangeText={txt => setEndPrice(txt)}
+            />
+          </View>
+
+          <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+            <TouchableOpacity
+              style={{...styles.filterButtons, backgroundColor: '#FFF'}}
+              onPress={() => handleClearFilter()}>
+              <Text style={{...styles.loginTxt, color: COLOR.secondary}}>
+                Clear Filter
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.filterButtons}
+              onPress={() => handleFilter()}>
+              <Text style={styles.loginTxt}>Filter</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       {/* <CustomButton
         title={'Click to See MapView'}
         style={{width: '100%', marginTop: 0, borderRadius: 0, marginBottom: 10}}
@@ -133,6 +355,7 @@ const HomeScreen = ({navigation, route}) => {
         </View>
       ) : (
         <FlatList
+          ref={flatlistRef}
           showsVerticalScrollIndicator={false}
           data={data}
           keyExtractor={(item, index) => item.Hostel.Id}
@@ -165,31 +388,19 @@ const HomeScreen = ({navigation, route}) => {
                 }>
                 {item.item?.HostelImages?.length === 0 ? (
                   <Card.Cover
+                    style={{height: 150}}
                     source={{
                       uri: `${api.image}${'noimage.png'}`,
                     }}
                   />
                 ) : (
                   <Card.Cover
+                    style={{height: 150}}
                     source={{
                       uri: `${api.image}${item.item.HostelImages[0]}`,
                     }}
                   />
                 )}
-
-                {/* {item.item.Hostel.Image === null ? (
-                  <Card.Cover
-                    source={{
-                      uri: `${api.image}${'noimage.png'}`,
-                    }}
-                  />
-                ) : (
-                  <Card.Cover
-                    source={{
-                      uri: `${api.image}${item.item.Hostel.Image}`,
-                    }}
-                  />
-                )} */}
 
                 <Card.Content>
                   {/* <Title>Rs 11,000</Title> */}
@@ -233,6 +444,15 @@ const HomeScreen = ({navigation, route}) => {
                     }}>
                     Starting from
                     <Title> PKR {item.item.Hostel.MinPrice} </Title>
+                    {/* {item.item.Hostel.MaxPrice > item.item.Hostel.MinPrice ? (
+                      <Title>
+                        {' '}
+                        PKR {item.item.Hostel.MinPrice} to{' '}
+                        {item.item.Hostel.MaxPrice}{' '}
+                      </Title>
+                    ) : (
+                      <Title> PKR {item.item.Hostel.MinPrice} </Title>
+                      )} */}
                   </Paragraph>
                   {item.item.Hostel.Gender == 'Male' ? (
                     <View style={styles.genderView}>
@@ -289,4 +509,36 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   loginTxt: {color: '#FFF', fontSize: 14, fontWeight: '600'},
+  priceInput: {
+    borderWidth: 1,
+    borderColor: COLOR.secondary,
+    borderRadius: 5,
+    padding: 0,
+    paddingLeft: 10,
+    height: 30,
+    width: 100,
+    marginHorizontal: 10,
+  },
+  filterButtons: {
+    height: 40,
+    width: 90,
+    borderRadius: 20 / 2,
+    backgroundColor: COLOR.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    marginTop: 15,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderColor: COLOR.secondary,
+  },
+  pickerView: {
+    height: 50,
+    // width: 180,
+    flex: 1,
+    marginLeft: 25,
+    borderWidth: 1,
+    borderColor: COLOR.secondary,
+    borderRadius: 10,
+  },
 });

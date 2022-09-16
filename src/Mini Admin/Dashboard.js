@@ -1,15 +1,15 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ImageBackground,
-} from 'react-native';
+import {Text, StyleSheet, ImageBackground} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from '../reuseable/CustomButton';
 import {fonts} from '../CONSTANTS/fonts';
 import {bg} from '../CONSTANTS/images';
 const Dashboard = ({navigation}) => {
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('user_id');
+    await AsyncStorage.removeItem('user');
+    navigation.replace('LoginScreen');
+  };
   return (
     <ImageBackground
       source={bg}
@@ -40,10 +40,7 @@ const Dashboard = ({navigation}) => {
         title="Booking Request"
         onPress={() => navigation.navigate('BookingRequest')}
       />
-      <CustomButton
-        title="Logout"
-        onPress={() => navigation.replace('LoginScreen')}
-      />
+      <CustomButton title="Logout" onPress={() => handleLogout()} />
     </ImageBackground>
   );
 };

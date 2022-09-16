@@ -129,6 +129,7 @@ const BookRoom = ({navigation, route}) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{flex: 1}}>
         <CustomHeader
+          navigation={navigation}
           text={'Book Room'}
           onBackPress={() => navigation.goBack()}
         />

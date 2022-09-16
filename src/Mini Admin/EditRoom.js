@@ -185,6 +185,7 @@ const EditRoom = ({navigation, route}) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <CustomHeader
           text={'Edit Room'}
+          navigation={navigation}
           onBackPress={() => navigation.goBack()}
         />
         {loading && <Loading />}

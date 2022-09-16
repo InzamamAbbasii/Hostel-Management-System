@@ -19,8 +19,8 @@ import MapView, {
 } from 'react-native-maps';
 import Geocoder from 'react-native-geocoder';
 import axios from 'axios';
-import {api} from './CONSTANTS/api';
-import {COLOR} from './CONSTANTS/Colors';
+import {api} from '../CONSTANTS/api';
+import {COLOR} from '../CONSTANTS/Colors';
 import {
   marker,
   marker_1,
@@ -29,13 +29,13 @@ import {
   marker_4,
   marker_5,
   marker_6,
-} from './CONSTANTS/images';
-import CustomButton from './reuseable/CustomButton';
-import CustomHeader from './reuseable/CustomHeader';
-import MenuComponent from './reuseable/MenuComponent';
+} from '../CONSTANTS/images';
+import CustomButton from '../reuseable/CustomButton';
+import CustomHeader from '../reuseable/CustomHeader';
+import MenuComponent from '../reuseable/MenuComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {parse} from '@babel/core';
-const MapViewScreen = ({navigation, route}) => {
+const MapView_BIITStudents = ({navigation, route}) => {
   const mapViewRef = useRef(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [data, setData] = useState([]);
@@ -62,79 +62,33 @@ const MapViewScreen = ({navigation, route}) => {
     let user = await AsyncStorage.getItem('user');
     if (user !== null) user = JSON.parse(user);
     axios
-      .get(api.get_Hostels, {
+      .get(api.get_Hostel_By_InstitudeName, {
         params: {
           user_id: id === null ? 0 : id,
+          institude_name: 'BIIT',
         },
       })
       .then(res => {
-        // -----------------------Get All Records without gender Filter Start------------------------
-
-        // setData(res.data);
-        // let coordinateList = [];
-        // res.data.forEach(element => {
-        //   let obj = {
-        //     latitude: parseFloat(element.Hostel.Latitude),
-        //     longitude: parseFloat(element.Hostel.Longitude),
-        //   };
-        //   coordinateList.push(obj);
-        // });
-        // setCoorsList(coordinateList);
-        // mapViewRef.current.fitToCoordinates(coordinateList, {
-        //   edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
-        //   animated: true,
-        // });
-        // -----------------------Get All Records without gender Filter End------------------------
-
-        // -----------------------Get Record Loggedin user Gender Start------------------------
-
-        if (user !== null && user.AccountType === 'User') {
-          //filter hostel by loggednin user Gender
-          let filter = res.data?.filter(
-            item =>
-              item?.Hostel?.Gender?.toLowerCase() ==
-              user?.Gender?.toLowerCase(),
-          );
-
-          setData(filter);
-          let coordinateList = [];
-          filter.forEach(element => {
-            let obj = {
-              latitude: parseFloat(element.Hostel.Latitude),
-              longitude: parseFloat(element.Hostel.Longitude),
-            };
-            coordinateList.push(obj);
-          });
-          setCoorsList(coordinateList);
-          mapViewRef.current.fitToCoordinates(coordinateList, {
-            edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
-            animated: true,
-          });
-        } else {
-          //storing all hostels
-          setData(res.data);
-          let coordinateList = [];
-          res.data.forEach(element => {
-            let obj = {
-              latitude: parseFloat(element.Hostel.Latitude),
-              longitude: parseFloat(element.Hostel.Longitude),
-            };
-            coordinateList.push(obj);
-          });
-          setCoorsList(coordinateList);
-          mapViewRef.current.fitToCoordinates(coordinateList, {
-            edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
-            animated: true,
-          });
-        }
-        // -----------------------Get Record Loggedin user Gender End------------------------
+        setData(res.data);
+        let coordinateList = [];
+        res.data.forEach(element => {
+          let obj = {
+            latitude: parseFloat(element.Hostel.Latitude),
+            longitude: parseFloat(element.Hostel.Longitude),
+          };
+          coordinateList.push(obj);
+        });
+        setCoorsList(coordinateList);
+        mapViewRef.current.fitToCoordinates(coordinateList, {
+          edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
+          animated: true,
+        });
       })
       .catch(err => alert(err));
   };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      // store.dispatch({ type: "CHANGE_INPUT", val: value });
       handleSearch();
     }, 2000);
 
@@ -143,8 +97,6 @@ const MapViewScreen = ({navigation, route}) => {
   }, [searchText]);
 
   const handleSearch = () => {
-    console.log(searchText);
-    // Address Geocoding
     if (searchText) {
       Geocoder.geocodeAddress(searchText)
         .then(res => {
@@ -219,43 +171,18 @@ const MapViewScreen = ({navigation, route}) => {
 
   return (
     <View style={{flex: 1, backgroundColor: '#F00'}}>
-      {user_id === null ? (
-        <View>
-          <CustomHeader
-            text="MapView"
-            navigation={navigation}
-            showBackButton={false}
-          />
-          <TouchableOpacity
-            style={styles.btnLogin}
-            onPress={() => navigation.navigate('LoginScreen')}>
-            <Text style={styles.loginTxt}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <CustomHeader
-          text="MapView"
-          navigation={navigation}
-          onBackPress={() => navigation.goBack()}
-        />
-      )}
-      <MenuComponent navigation={navigation} route={route} />
+      <CustomHeader
+        text="MapView"
+        navigation={navigation}
+        onBackPress={() => navigation.goBack()}
+      />
 
-      <Searchbar
+      {/* <Searchbar
         placeholder="Search"
         onChangeText={txt => setSearchText(txt)}
         value={searchText}
-      />
-      {/* <CustomButton
-        title={'Click to See ListView'}
-        style={{width: '100%', marginTop: 0, borderRadius: 0}}
-        onPress={() => navigation.replace('SuperAdmin_ViewHostels')}
       /> */}
-      {/* {data.length === 0 ? (
-        <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
-          <Text style={{fontSize: 16, fontWeight: '500'}}>No Record Found</Text>
-        </View>
-      ) : ( */}
+
       <MapView
         ref={mapViewRef}
         provider={PROVIDER_GOOGLE}
@@ -283,12 +210,14 @@ const MapViewScreen = ({navigation, route}) => {
                       Hostel: item.Hostel,
                       HostelImages: item.HostelImages,
                       Rooms: item.RoomsList,
+                      Users: item.Users,
                       isFavorite: item.isFavorite,
                     })
                   : navigation.navigate('HostelDetail_User', {
                       Hostel: item.Hostel,
                       HostelImages: item.HostelImages,
                       Rooms: item.RoomsList,
+                      Users: item.Users,
                       isFavorite: item.isFavorite,
                     });
               }}
@@ -344,7 +273,7 @@ const MapViewScreen = ({navigation, route}) => {
   );
 };
 
-export default MapViewScreen;
+export default MapView_BIITStudents;
 
 const styles = StyleSheet.create({
   markerFixed: {

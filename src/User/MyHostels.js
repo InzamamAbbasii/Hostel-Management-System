@@ -55,6 +55,7 @@ const MyHostels = ({navigation}) => {
       <View style={{flex: 1, backgroundColor: '#fff'}}>
         <CustomHeader
           text={'My Hostels'}
+          navigation={navigation}
           onBackPress={() => navigation.goBack()}
         />
         {data.length === 0 ? (

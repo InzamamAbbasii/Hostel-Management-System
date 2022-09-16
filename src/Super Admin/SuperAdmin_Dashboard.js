@@ -6,12 +6,18 @@ import {
   StyleSheet,
   ImageBackground,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from '../reuseable/CustomButton';
 import {bg} from '../CONSTANTS/images';
 import {fonts} from '../CONSTANTS/fonts';
 import {COLOR} from '../CONSTANTS/fonts';
 
 const SuperAdmin_Dashboard = ({navigation}) => {
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('user_id');
+    await AsyncStorage.removeItem('user');
+    navigation.replace('LoginScreen');
+  };
   return (
     <ImageBackground
       source={bg}
@@ -41,9 +47,10 @@ const SuperAdmin_Dashboard = ({navigation}) => {
         onPress={() => navigation.navigate('Search')}
       />
       <CustomButton
-        title="Logout"
-        onPress={() => navigation.replace('LoginScreen')}
+        title="View BIIT Students on Map"
+        onPress={() => navigation.navigate('MapView_BIITStudents')}
       />
+      <CustomButton title="Logout" onPress={() => handleLogout()} />
     </ImageBackground>
   );
 };

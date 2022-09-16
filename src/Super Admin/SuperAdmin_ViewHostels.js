@@ -108,6 +108,7 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
         <View>
           <CustomHeader
             text="View Hostels"
+            navigation={navigation}
             onBackPress={() => navigation.navigate('LoginScreen')}
           />
           <TouchableOpacity
@@ -119,6 +120,7 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
       ) : (
         <CustomHeader
           text="View Hostels"
+          navigation={navigation}
           onBackPress={() => navigation.goBack()}
         />
       )}
@@ -166,6 +168,7 @@ const SuperAdmin_ViewHostels = ({navigation, route}) => {
                     Hostel: item.item.Hostel,
                     HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,
+                    Users: item.item.Users,
                     isFavorite: item.item.isFavorite,
                   })
                 }>

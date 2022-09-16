@@ -119,9 +119,10 @@ const Search = ({navigation}) => {
           console.log('search for', searchText);
           console.log(item.HostelInfo[0].HostelName);
           return (
-            item.Name.toLowerCase().match(txt) || //check username
-            item.Reg_No.toLowerCase().match(txt) || //check regno
-            item.HostelInfo[0].HostelName.toLowerCase().match(txt) //check hostelname
+            item?.Name?.toLowerCase()?.match(txt) || //check username
+            item?.Reg_No?.toLowerCase()?.match(txt) || //check regno
+            item?.InstitudeName?.toLowerCase()?.match(txt) || //check institude name i.e, biit
+            item?.HostelInfo[0]?.HostelName?.toLowerCase()?.match(txt) //check hostelname
           );
         });
         setUserData(filter);
@@ -254,6 +255,12 @@ const Search = ({navigation}) => {
                       </Paragraph>
                       <Paragraph>Email : {item.item.Email}</Paragraph>
                       <Paragraph>Reg_NO : {item.item.Reg_No}</Paragraph>
+                      <Paragraph>
+                        Institude Name:{' '}
+                        {item.item.InstitudeName == null
+                          ? 'N/A'
+                          : item.item.InstitudeName}
+                      </Paragraph>
                     </Card.Content>
                   </Card>
                 );

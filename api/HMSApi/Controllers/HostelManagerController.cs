@@ -317,8 +317,26 @@ namespace HMSApi.Controllers
                                                                          .Select(r => r.Sum(c => c.NoOfBeds)).FirstOrDefault()
                                                                          }).ToList(),
                                               Rating = GetRating(s.Id),//calling seld created method for rating
-
-                                            }).ToList();
+                                              Users = db.BookingRequests.Join(db.Users, //all users detail who correctly live in this hostel
+                                                     r => r.User_Id,
+                                                     u => u.Id,
+                                                     (r, u) => new { RequestInfo = r, UserInfo = u }
+                                                   ).Where(w => w.RequestInfo.Status == "Approved" && w.RequestInfo.H_Id == s.Id
+                                                   ).Select(u => new
+                                                   {
+                                                       Name = u.UserInfo.FirstName + " " + u.UserInfo.LastName,
+                                                       u.UserInfo.Email,
+                                                       u.UserInfo.CNIC,
+                                                       u.UserInfo.PhoneNo,
+                                                       u.UserInfo.Occupation,
+                                                       u.UserInfo.Reg_No,
+                                                       u.UserInfo.InstitudeName,
+                                                       u.RequestInfo.BookingDate,
+                                                       u.RequestInfo.CheckoutDate,
+                                                       u.RequestInfo.RoomType,
+                                                       u.RequestInfo.NoOfBeds,
+                                                   })
+                                          }).ToList();
 
                 return Request.CreateResponse(HttpStatusCode.OK, hostelsList);
             }

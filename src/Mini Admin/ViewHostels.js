@@ -51,7 +51,7 @@ const ViewHostels = ({navigation}) => {
       })
       .then(res => {
         setData(res.data);
-        console.log(res.data[0].HostelImages);
+        console.log(res.data[0]);
       })
       .catch(err => alert(err))
       .finally(() => {
@@ -95,6 +95,7 @@ const ViewHostels = ({navigation}) => {
                     Hostel: item.item.Hostel,
                     HostelImages: item.item.HostelImages,
                     Rooms: item.item.RoomsList,
+                    Users: item.item.Users,
                   })
                 }>
                 {item.item?.HostelImages?.length === 0 ? (

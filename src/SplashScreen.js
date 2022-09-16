@@ -7,12 +7,24 @@ const SplashScreen = ({navigation}) => {
 
   useEffect(() => {
     setTimeout(async () => {
-      // global.user[0] = [];
-      // global.user_id = 0;
-      await AsyncStorage.removeItem('user_id');
-      await AsyncStorage.removeItem('user');
-      // navigation.replace('SuperAdmin_ViewHostels');
-      navigation.replace('HomeScreen');
+      // await AsyncStorage.removeItem('user_id');
+      // await AsyncStorage.removeItem('user');
+      let user = await AsyncStorage.getItem('user');
+      console.log(user);
+      if (user !== null) {
+        user = JSON.parse(user);
+        if (user.AccountType === 'Hostel Manager')
+          navigation.navigate('Dashboard');
+        else if (user.AccountType === 'Admin') {
+          navigation.navigate('SuperAdmin_Dashboard');
+        } else if (user.AccountType == 'User') {
+          navigation.navigate('UserDashboard');
+        } else {
+          navigation.replace('HomeScreen');
+        }
+      } else {
+        navigation.replace('HomeScreen');
+      }
     }, 3000);
   }, []);
 

@@ -66,7 +66,11 @@ const FavoriteHostels = ({navigation, route}) => {
 
   return (
     <View style={{flex: 1, backgroundColor: '#FFF'}}>
-      <CustomHeader text="Favorite" onBackPress={() => navigation.goBack()} />
+      <CustomHeader
+        text="Favorite"
+        navigation={navigation}
+        onBackPress={() => navigation.goBack()}
+      />
 
       {data.length === 0 && loadinng == false ? (
         <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
