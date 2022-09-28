@@ -42,6 +42,7 @@ import HomeScreen from './src/HomeScreen';
 import HostelDetail from './src/HostelDetail';
 import BookRoom from './src/BookRoom';
 import Feedback from './src/Feedback';
+import ViewFeedback from './src/ViewFeedback';
 import MapViewScreen from './src/MapView';
 import './global.js';
 const Stack = createNativeStackNavigator();
@@ -178,6 +179,11 @@ const App = ({navigation}) => {
         <Stack.Screen name="FavoriteHostels" component={FavoriteHostels} />
         <Stack.Screen name="HostelDetail_User" component={HostelDetail_User} />
         <Stack.Screen name="MyPendingHostels" component={MyPendingHostels} />
+        <Stack.Screen
+          name="ViewFeedback"
+          component={ViewFeedback}
+          options={{headerShown: true}}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

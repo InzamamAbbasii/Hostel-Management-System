@@ -538,7 +538,7 @@ const HostelDetail_User = ({navigation, route}) => {
                   <CustomButton
                     title="View Feedback"
                     onPress={() =>
-                      navigation.navigate('Feedback', {
+                      navigation.navigate('ViewFeedback', {
                         H_Id: route.params.Hostel.Id,
                         AddFeedback: false,
                       })

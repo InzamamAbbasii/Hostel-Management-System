@@ -178,6 +178,9 @@
     <Compile Include="Models\FeedBack.cs">
       <DependentUpon>HMSModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Feedback_Facilites.cs">
+      <DependentUpon>HMSModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\HMSModel.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

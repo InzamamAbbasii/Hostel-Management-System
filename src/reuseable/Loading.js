@@ -2,7 +2,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import Lottie from 'lottie-react-native';
 import {COLOR} from '../CONSTANTS/Colors';
-const Loading = () => {
+const Loading = ({style}) => {
   return (
     <View
       style={{
@@ -15,6 +15,7 @@ const Loading = () => {
         bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
+        ...style,
       }}>
       <View
         style={{

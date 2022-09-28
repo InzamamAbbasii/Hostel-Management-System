@@ -44,4 +44,6 @@ export let api = {
   add_Favorite: BASE_URL + 'api/User/AddFavorite',
   remove_Favorite: BASE_URL + 'api/User/RemoveFavorite',
   get_Favorite_Hostels: BASE_URL + 'api/User/GetFavoriteHostels',
+  get_hostel_facilities: BASE_URL + 'api/User/GetHostelFacilities',
+  add_feedback_facilities: BASE_URL + 'api/User/SaveFeedback_Facilites',
 };

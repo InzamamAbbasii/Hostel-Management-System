@@ -8,6 +8,7 @@
     <EntitySet Name="Hostels" EntityType="Model.Hostel" />
     <EntitySet Name="FavoriteHostels" EntityType="Model.FavoriteHostel" />
     <EntitySet Name="Users" EntityType="Model.User" />
+    <EntitySet Name="Feedback_Facilites" EntityType="Model.Feedback_Facilites" />
   </EntityContainer>
   <EntityType Name="FeedBack">
     <Key>
@@ -96,5 +97,16 @@
     <Property Name="Reg_No" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
     <Property Name="Password" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
     <Property Name="AccountType" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+  </EntityType>
+  <EntityType Name="Feedback_Facilites">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="H_Id" Type="Int32" />
+    <Property Name="User_Id" Type="Int32" />
+    <Property Name="Facility" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+    <Property Name="Rating" Type="Double" />
+    <Property Name="F_Id" Type="Int32" />
   </EntityType>
 </Schema>

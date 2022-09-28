@@ -32,5 +32,6 @@ namespace HMSApi.Models
         public virtual DbSet<Hostel> Hostels { get; set; }
         public virtual DbSet<FavoriteHostel> FavoriteHostels { get; set; }
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Feedback_Facilites> Feedback_Facilites { get; set; }
     }
 }

@@ -37,6 +37,17 @@
           <Property Name="Rating" Type="float" />
           <Property Name="Description" Type="nvarchar" MaxLength="150" />
         </EntityType>
+        <EntityType Name="Feedback_Facilites">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="H_Id" Type="int" />
+          <Property Name="User_Id" Type="int" />
+          <Property Name="Facility" Type="varchar" MaxLength="150" />
+          <Property Name="Rating" Type="float" />
+          <Property Name="F_Id" Type="int" />
+        </EntityType>
         <EntityType Name="Hostel_Images">
           <Key>
             <PropertyRef Name="Id" />
@@ -97,6 +108,7 @@
           <EntitySet Name="BookingRequest" EntityType="Self.BookingRequest" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="FavoriteHostels" EntityType="Self.FavoriteHostels" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="FeedBack" EntityType="Self.FeedBack" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Feedback_Facilites" EntityType="Self.Feedback_Facilites" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Hostel_Images" EntityType="Self.Hostel_Images" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Hostel_Rooms" EntityType="Self.Hostel_Rooms" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Hostels" EntityType="Self.Hostels" Schema="dbo" store:Type="Tables" />
@@ -114,6 +126,7 @@
           <EntitySet Name="Hostels" EntityType="Model.Hostel" />
           <EntitySet Name="FavoriteHostels" EntityType="Model.FavoriteHostel" />
           <EntitySet Name="Users" EntityType="Model.User" />
+          <EntitySet Name="Feedback_Facilites" EntityType="Model.Feedback_Facilites" />
         </EntityContainer>
         <EntityType Name="FeedBack">
           <Key>
@@ -202,6 +215,17 @@
           <Property Name="Reg_No" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Password" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="AccountType" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Feedback_Facilites">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="H_Id" Type="Int32" />
+          <Property Name="User_Id" Type="Int32" />
+          <Property Name="Facility" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Rating" Type="Double" />
+          <Property Name="F_Id" Type="Int32" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -300,6 +324,18 @@
                 <ScalarProperty Name="Email" ColumnName="Email" />
                 <ScalarProperty Name="LastName" ColumnName="LastName" />
                 <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Feedback_Facilites">
+            <EntityTypeMapping TypeName="Model.Feedback_Facilites">
+              <MappingFragment StoreEntitySet="Feedback_Facilites">
+                <ScalarProperty Name="F_Id" ColumnName="F_Id" />
+                <ScalarProperty Name="Rating" ColumnName="Rating" />
+                <ScalarProperty Name="Facility" ColumnName="Facility" />
+                <ScalarProperty Name="User_Id" ColumnName="User_Id" />
+                <ScalarProperty Name="H_Id" ColumnName="H_Id" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>

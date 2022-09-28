@@ -20,6 +20,7 @@ const BookingRequest = () => {
 
   const getBookingRequest = async () => {
     let id = await AsyncStorage.getItem('user_id');
+    console.log({id});
     axios
       .get(api.get_Booking_Request, {params: {user_id: id}})
       .then(response => {

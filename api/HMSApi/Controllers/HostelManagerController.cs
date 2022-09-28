@@ -135,7 +135,7 @@ namespace HMSApi.Controllers
 
         }
 
-        [HttpGet]
+     /*   [HttpGet]
         //Getting all approved hostels 
         public object GetRating(int id)
         {
@@ -197,7 +197,7 @@ namespace HMSApi.Controllers
             {
                 return new { };
             }
-        }
+        }*/
 
         [HttpGet]
         public HttpResponseMessage GetPendingHostels(int user_id)
@@ -251,7 +251,7 @@ namespace HMSApi.Controllers
                                                                          .GroupBy(g => g.RoomType)
                                                                          .Select(r => r.Sum(c => c.NoOfBeds)).FirstOrDefault()
                                                                          }).ToList(),
-                                              Rating = GetRating(s.Id),//calling seld created method for rating
+                                              Rating = new AdminController().GetRating(s.Id),//calling seld created method for rating
 
                                           }).ToList();
                 return Request.CreateResponse(HttpStatusCode.OK, hostelsList);
@@ -316,7 +316,7 @@ namespace HMSApi.Controllers
                                                                          .GroupBy(g => g.RoomType)
                                                                          .Select(r => r.Sum(c => c.NoOfBeds)).FirstOrDefault()
                                                                          }).ToList(),
-                                              Rating = GetRating(s.Id),//calling seld created method for rating
+                                              Rating = new AdminController().GetRating(s.Id),//calling seld created method for rating
                                               Users = db.BookingRequests.Join(db.Users, //all users detail who correctly live in this hostel
                                                      r => r.User_Id,
                                                      u => u.Id,

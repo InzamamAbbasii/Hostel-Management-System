@@ -40,7 +40,8 @@ namespace HMSApi.Controllers
                 var rating = db.FeedBacks.Where(w => w.H_Id == id).GroupBy(g => g.Rating).Select(s => new
                 {
                     s.Key,
-                    Total = s.Count()
+                    Total = s.Count(),
+                    Id = s.FirstOrDefault().Id
                 });
                 var total = 0.0;
                 var sum = 0.0;
@@ -75,7 +76,67 @@ namespace HMSApi.Controllers
                     // sum = 5+4+0
                     TotalReviews +=  total_reviews_in_one_group; 
                 }
-                    var obj = new
+
+                List<dynamic> facilities_rating_list = new List<dynamic>();
+                var facilites_Rating = db.Feedback_Facilites.Where(w => w.H_Id == id).GroupBy(g=>g.Facility);
+                foreach (var item in facilites_Rating)
+                {
+                    var group_on_rating = item.GroupBy(g => g.Rating).Select(s => new
+                    {
+                        s.Key,Total = s.Count()
+                    });
+                    var total_f = 0.0;
+                    var sum_f = 0.0;
+                    var One_Star_f = 0;
+                    var Two_Star_f = 0;
+                    var Three_Star_f = 0;
+                    var Four_Star_f = 0;
+                    var Five_Star_f = 0;
+                    var TotalRatingCount_f = 0.0;
+                    var TotalReviews_f = 0.0;
+                    var AverageRating_f = 0.0;
+                    foreach (var item_f in group_on_rating)
+                    {
+                        if (item_f.Key == 1.0 || item_f.Key == 1)
+                            One_Star_f = item_f.Total;
+                        else if (item_f.Key == 2.0 || item_f.Key == 2)
+                            Two_Star_f = item_f.Total;
+                        else if (item_f.Key == 3.0 || item_f.Key == 3)
+                            Three_Star_f = item_f.Total;
+                        else if (item_f.Key == 4.0 || item_f.Key == 4)
+                            Four_Star_f = item_f.Total;
+                        else if (item_f.Key == 5.0 || item_f.Key == 5)
+                            Five_Star_f = item_f.Total;
+                        var total_reviews_in_one_group_f = Convert.ToDouble(item_f.Total);// i.e 15 people give 5 star
+                        var rating_value_of_group_f = Convert.ToDouble(item_f.Key); // i.e for 5 star value is 5
+                        TotalRatingCount_f += rating_value_of_group_f * total_reviews_in_one_group_f;
+                        TotalReviews_f += total_reviews_in_one_group_f;
+                    }
+                    var obj_f = new
+                    {
+                        //Lst = rating,
+                        One_Star_f,
+                        Two_Star_f,
+                        Three_Star_f,
+                        Four_Star_f,
+                        Five_Star_f,
+                        TotalRatingCount_f,
+                        TotalReviews_f,
+                        AverageRating_f = TotalReviews_f == 0 ? 0.0 : Math.Round(TotalRatingCount_f / TotalReviews_f, 1),
+                    };
+                    facilities_rating_list.Add(new
+                    {
+                       Facility= item.Key,
+                       Ratings= obj_f
+                    });
+                }
+
+
+
+
+
+
+                var obj = new
                     {
                         //Lst = rating,
                         One_Star,
@@ -85,8 +146,10 @@ namespace HMSApi.Controllers
                         Five_Star,
                         TotalRatingCount,
                         TotalReviews,
-                          AverageRating =TotalReviews==0?0.0:Math.Round(TotalRatingCount / TotalReviews, 1),
-                    };
+                        AverageRating =TotalReviews==0?0.0:Math.Round(TotalRatingCount / TotalReviews, 1),
+                        Feedback_Facilites= facilities_rating_list
+                };
+                
                     return obj;
             }
             catch (Exception ex)

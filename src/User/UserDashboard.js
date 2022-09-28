@@ -50,6 +50,15 @@ const UserDashboard = ({navigation}) => {
         onPress={() => navigation.navigate('FavoriteHostels')}
       />
       <CustomButton title="Logout" onPress={() => handleLogout()} />
+      {/* <CustomButton
+        title="Feedback"
+        onPress={() =>
+          navigation.navigate('Feedback', {
+            H_Id: 87,
+            AddFeedback: true,
+          })
+        }
+      /> */}
     </ImageBackground>
   );
 };

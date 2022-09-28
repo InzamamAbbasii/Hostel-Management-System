@@ -31,9 +31,9 @@ namespace HMSApi.Controllers
         {
             try
             {
-                db.FeedBacks.Add(feedBack);
-                db.SaveChanges();
-                return Request.CreateResponse(HttpStatusCode.OK, "true");
+               var insertedRecored = db.FeedBacks.Add(feedBack);
+               db.SaveChanges();
+                return Request.CreateResponse(HttpStatusCode.OK, insertedRecored.Id);
             }
             catch (Exception ex)
             {
@@ -51,17 +51,29 @@ namespace HMSApi.Controllers
                                                       f => f.User_Id,
                                                       u => u.Id,
                                                       (f, u) => new { f, u }
-                                                    ).Where(w=>w.f.H_Id==id)
+                                                    ).Where(w => w.f.H_Id == id).AsEnumerable()
                                                     .Select(s => new
                                                     {
                                                         s.f.Id,
                                                         s.f.Rating,
                                                         s.f.Description,
-                                                        Name = s.u.FirstName+" "+s.u.LastName,
+                                                        Name = s.u.FirstName + " " + s.u.LastName,
                                                         s.u.Email,
-                                                       
-                                                    });
-                return Request.CreateResponse(HttpStatusCode.OK, list);
+                                                        Facilities = db.Feedback_Facilites.Where(w => w.F_Id == s.f.Id)
+                                                        .Select((item) => new
+                                                        {
+                                                            item.Facility,
+                                                            item.Rating
+                                                        }),
+                                                    }) ;
+                var Hostel = db.Hostels.FirstOrDefault(f => f.Id == id);
+                var obj = new
+                {
+                    HostelName =  Hostel==null ? "":Hostel.HostelName,
+                    AverageRatingList = new AdminController().GetRating(id),
+                    UserRatingList=list
+                };
+                return Request.CreateResponse(HttpStatusCode.OK, obj);
             }
             catch (Exception ex)
             {
@@ -69,7 +81,7 @@ namespace HMSApi.Controllers
             }
         }
 
-        public object GetRating(int id)
+       /* public object GetRating(int id)
         {
             try
             {
@@ -129,7 +141,7 @@ namespace HMSApi.Controllers
             {
                 return new { };
             }
-        }
+        }*/
 
         [HttpGet]
         // getting user specific hostel that is booked by him
@@ -512,7 +524,7 @@ namespace HMSApi.Controllers
                                                                            .GroupBy(g => g.RoomType)
                                                                            .Select(r => r.Sum(c => c.NoOfBeds)).FirstOrDefault()
                                                                            }).ToList(),
-                                                Rating = GetRating(s.h.Id),//calling self created method for rating
+                                                Rating = new AdminController().GetRating(s.h.Id),//calling self created method for rating
 
                                                 /*
                      Users = db.BookingRequests.Join(db.Users, //all users detail who correctly live in this hostel
@@ -537,6 +549,51 @@ namespace HMSApi.Controllers
         */
                                             }).ToList(); ;
                 return Request.CreateResponse(HttpStatusCode.OK,list);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+
+        [HttpGet]
+        public HttpResponseMessage GetHostelFacilities(int hostel_id)
+        {
+            try
+            {
+                var list = db.Hostels.FirstOrDefault(w => w.Id == hostel_id);
+                if (list != null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, list.Facilites);
+                }
+                else
+                {
+                return Request.CreateResponse(HttpStatusCode.OK, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+
+
+        [HttpPost]
+        public HttpResponseMessage SaveFeedback_Facilites(Feedback_Facilites[] feedback_Facilites)
+        {
+            try
+            {
+                using (var db = new Hostel_Management_SystemEntities())
+                {
+                    foreach (Feedback_Facilites c in feedback_Facilites)
+                    {
+                        db.Feedback_Facilites.Add(c);
+                    }
+                    int n = db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, true);
+                }
             }
             catch (Exception ex)
             {
