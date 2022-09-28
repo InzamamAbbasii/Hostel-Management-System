@@ -297,7 +297,7 @@ namespace HMSApi.Controllers
                                                   MinPrice = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Min(m => m.Price),
                                                   MaxPrice = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Max(m => m.Price),
                                                   TotalRooms = db.Hostel_Rooms.Where(w => w.H_Id == s.Id).Sum(sm => sm.TotalRooms),//total rooms in hostel
-                                                    TotalBookedRooms = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
+                                                  TotalBookedRooms = db.BookingRequests.Where(w => w.H_Id == s.Id && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
                                                 },
                                               HostelImages = db.Hostel_Images.Where(w => w.H_Id == s.Id).Select(ss => ss.Image),
                                               RoomsList = db.Hostel_Rooms.Where(w => w.H_Id == s.Id)
@@ -370,9 +370,15 @@ namespace HMSApi.Controllers
                                                        s.UserInfo.Email,
                                                        s.UserInfo.CNIC,
                                                        s.UserInfo.PhoneNo,
-                                                       s.UserInfo.Occupation
-                                                    });
-                                                    
+                                                       s.UserInfo.Occupation,
+                                                       s.HostelInfo,
+                                                       TotalRooms = db.Hostel_Rooms.Where(w => w.H_Id == s.RequestInfo.H_Id && w.RoomType==s.RequestInfo.RoomType).Sum(sm => sm.TotalRooms),//total rooms in hostel
+
+                                                       TotalBeds = db.Hostel_Rooms.Where(w => w.H_Id == s.RequestInfo.H_Id && w.RoomType == s.RequestInfo.RoomType).Sum(sm => sm.TotalRooms*sm.BedsInRoom),//total rooms in hostel
+                                                       TotalBookedBeds = db.BookingRequests.Where(w => w.H_Id == s.RequestInfo.H_Id && w.RoomType == s.RequestInfo.RoomType && w.Status == "Approved").Sum(sm => sm.NoOfBeds) //total booked rooms in hostel
+                                                    }).OrderBy(o=>o.Id);
+
+         
 
                 return Request.CreateResponse(HttpStatusCode.OK, requestList);
             }

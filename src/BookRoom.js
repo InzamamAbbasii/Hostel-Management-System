@@ -71,11 +71,11 @@ const BookRoom = ({navigation, route}) => {
   };
 
   const handleIncrement = () => {
-    if (AvailableBeds > roomCount) {
-      setRoomCount(roomCount + 1);
-    } else {
-      alert('Sorry! No More Beds Avaiable.');
-    }
+    // if (AvailableBeds > roomCount) {
+    setRoomCount(roomCount + 1);
+    // } else {
+    //   alert('Sorry! No More Beds Avaiable.');
+    // }
   };
   const handleDecrement = () => {
     if (roomCount > 1) setRoomCount(roomCount - 1);
@@ -113,6 +113,7 @@ const BookRoom = ({navigation, route}) => {
           alert(
             'Your request is send to Hostel Owner Successfully.Please wait for approvel.Thanks😍',
           );
+          navigation.goBack();
         })
         .catch(err => console.log(err));
     }
@@ -236,7 +237,7 @@ const BookRoom = ({navigation, route}) => {
                 );
               })}
             </View>
-            {roomType.length !== 0 &&
+            {/* {roomType.length !== 0 &&
               (AvailableBeds < 1 ? (
                 <Text style={{...styles.radioButtonText, color: 'red'}}>
                   {AvailableBeds} beds available
@@ -245,7 +246,7 @@ const BookRoom = ({navigation, route}) => {
                 <Text style={{...styles.radioButtonText, color: 'green'}}>
                   {AvailableBeds} beds available
                 </Text>
-              ))}
+              ))} */}
             <View
               style={{
                 flexDirection: 'row',

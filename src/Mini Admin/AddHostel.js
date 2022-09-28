@@ -11,6 +11,7 @@ import {
   ScrollView,
   PermissionsAndroid,
   FlatList,
+  Modal,
 } from 'react-native';
 import {RadioButton, Checkbox} from 'react-native-paper';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
@@ -42,6 +43,8 @@ const AddHostel = ({navigation, route}) => {
     longitude: '',
     image: null,
   });
+  const [newFacility, setNewFacility] = useState('');
+  const [isModalVisiable, setIsModalVisiable] = useState(false);
   const [image, setImage] = useState({
     fileURI: '',
     fileName: '',
@@ -256,6 +259,21 @@ const AddHostel = ({navigation, route}) => {
     });
     setFacilitesList(newData);
   };
+  const handleAddNewFacility = () => {
+    if (newFacility.length > 0) {
+      const newItem_Index = facilitesList.length;
+      let newObj = {
+        Id: newItem_Index,
+        Name: newFacility,
+        Status: 'unchecked',
+      };
+      setFacilitesList(data => [...facilitesList, newObj]);
+      setIsModalVisiable(false);
+      setNewFacility('');
+    } else {
+      alert('Please enter text to add');
+    }
+  };
   return (
     <ImageBackground source={bg} style={{...StyleSheet.absoluteFillObject}}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -265,6 +283,70 @@ const AddHostel = ({navigation, route}) => {
           onBackPress={() => navigation.goBack()}
         />
         {loading && <Loading />}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isModalVisiable}
+          onRequestClose={() => {
+            setIsModalVisiable(!isModalVisiable);
+          }}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Add Facility</Text>
+              <Text style={{color: '#000', fontSize: 14, fontWeight: '500'}}>
+                Title :{' '}
+              </Text>
+              <TextInput
+                style={{
+                  width: '100%',
+                  borderBottomColor: COLOR.secondary,
+                  borderBottomWidth: 1,
+                  padding: 5,
+                }}
+                placeholder={'Enter Facility'}
+                value={newFacility}
+                onChangeText={txt => setNewFacility(txt)}
+              />
+              <View style={{flexDirection: 'row'}}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setNewFacility('');
+                    setIsModalVisiable(false);
+                  }}
+                  style={{
+                    flex: 1,
+                    borderColor: COLOR.secondary,
+                    borderWidth: 1,
+                    padding: 10,
+                    borderRadius: 5,
+                    marginTop: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginHorizontal: 5,
+                  }}>
+                  <Text style={{color: COLOR.secondary, fontWeight: '600'}}>
+                    Close
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleAddNewFacility()}
+                  style={{
+                    flex: 1,
+                    backgroundColor: COLOR.secondary,
+                    padding: 10,
+                    borderRadius: 5,
+                    marginTop: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginHorizontal: 5,
+                  }}>
+                  <Text style={{color: '#FFFFFF', fontWeight: '600'}}>Add</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         <View style={{flex: 1, paddingHorizontal: 16}}>
           <Input
             heading={'Name '}
@@ -335,7 +417,20 @@ const AddHostel = ({navigation, route}) => {
             </View>
           </View>
 
-          <Text style={styles.facilitesHeading}>Facilites</Text>
+          <View style={{flexDirection: 'row'}}>
+            <Text style={{...styles.facilitesHeading, flex: 1}}>Facilites</Text>
+            <TouchableOpacity
+              onPress={() => setIsModalVisiable(true)}
+              style={{
+                backgroundColor: COLOR.secondary,
+                padding: 10,
+                borderRadius: 5,
+              }}>
+              <Text style={{color: '#FFFFFF', fontWeight: '600'}}>
+                Add Facility
+              </Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.facilitesContainer}>
             {facilitesList.map((item, key) => {
               return (
@@ -536,5 +631,36 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 2,
     marginVertical: 20,
+  },
+  centeredView: {
+    flex: 1,
+
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    width: SCREEN_WIDTH * 0.85,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    // alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 20,
+    color: COLOR.secondary,
   },
 });
